@@ -1,0 +1,8 @@
+{
+    "workbench.colorCustomizations": {
+        "terminal.background": "#19393b",
+        "minimap.background": "#00000000",
+        "scrollbar.shadow": "#00000000"
+    },
+    "accessibility.signals.sounds.volume": 0
+}

@@ -1,0 +1,248 @@
+from inputdata.raw_data_repos import AuthoritativeDataRepo
+from common import utils_functions, technical_config
+from common.logger import setup_logging
+
+class DataProcessor:
+    def __init__(self, path_to_source, path_to_test, path_to_changes, path_to_output):
+        self.path_to_source = path_to_source
+        self.path_to_test = path_to_test
+        self.path_to_changes = path_to_changes
+        self.path_to_output = path_to_output
+        self.logging = setup_logging()
+        self.spark = utils_functions.spark_builder(technical_config.log_verbosity)
+
+    def load_data(self):
+        data_load_task = DataLoadTask(technical_config.args)
+        self.raw_repo = AuthoritativeDataRepo()
+        self.raw_repo.load_data(data_load_task)
+        return data_load_task
+
+    def validate_date(self, date):
+        try: 
+            businessDate = utils_functions.format_date(date, technical_config.format_y_m_d, technical_config.format_dmy)
+        except ValueError as e: 
+            self.logging.error(f"incoming date in processingDate is:{businessDate}")
+            raise Exception("Date provided for the shopping list, wrong format!")
+
+        today = datetime.today().strftime(technical_config.format_y_m_d)
+        businessDate_ymd = utils_functions.format_date(businessDate, technical_config.format_dmy, technical_config.format_ymd)
+        today_ymd = utils_functions.format_date(today, technical_config.format_y_m_d, technical_config.format_ymd)
+
+        if businessDate_ymd > today_ymd:
+            self.logging.error(f"processing date argument is {businessDate_ymd} [ymd] but today is {today_ymd} [ymd]")
+            raise Exception("Date provided for the shopping list can't be in the future!")
+
+    def load_shopping_list(self, data_load_task, businessDate):
+        df_shoppping_list_pich = data_load_task.read(data_load_task.skr_shopping_list_input())
+        df_pich_dates = df_shoppping_list_pich.filter(df_shoppping_list_pich.processingDate == businessDate)
+        df_shoppping_list_pich.select("processingDate").distinct().show()
+
+        if len(df_pich_dates.head(1)) == 0:
+            distinct_processingDate = df_shoppping_list_pich.select("processingDate").distinct()
+            processingDate_list = list(distinct_processingDate.select('processingDate').toPandas()['processingDate'])
+            raise Exception(
+                f"shopping list does not exist for the given date: {businessDate}, available ones: {processingDate_list}"
+            )
+
+        self.logging.info("Shopping list loaded successfully!")
+        return df_pich_dates
+
+    def process_shopping_list(self, df_pich_dates):
+        original_shopping_list = list(df_pich_dates.select("PARTNER_ID").drop_duplicates().toPandas().PARTNER_ID)
+
+        df_pich = df_pich_dates.join(
+            self.raw_repo
+            .df_partner_br
+            .to_spark()
+            .withColumn("PARTNER_ID", F.col("partnerID"))
+            .select('PARTNER_ID')
+            .drop_duplicates(), 
+            on="PARTNER_ID"
+        ).toPandas()
+
+        not_aymore_clients = [x for x in original_shopping_list if (x not in df_pich.PARTNER_ID.unique())]
+        not_aymore_clients = [x for x in not_aymore_clients if x != 'PARTNER_ID']
+        self.raw_repo.df_pich = df_pich
+
+    def run(self, date):
+        if os.path.abspath(self.path_to_source) not in sys.path:
+            sys.path.insert(0, os.path.abspath(self.path_to_source))
+        data_load_task = self.load_data()
+        self.validate_date(date)
+        df_pich_dates = self.load_shopping_list(data_load_task, date)
+        self.process_shopping_list(df_pich_dates)
+
+# Usage
+processor = DataProcessor("/dbfs/dom", "/dbfs/test_input.csv", "/dbfs/changes.csv", "/dbfs/output.csv")
+processor.run("2024-02-12")
+
+
+
+# section 2 
+
+path_to_dom = "/dbfs/dom"
+path_to_test_input = "/dbfs/test_input.csv"
+path_to_changes = "/dbfs/changes.csv"
+path_to_output = "/dbfs/output.csv"
+
+test_data_df = pd.read_csv(path_to_test_input)
+test_changes_df= pd.read_csv(path_to_changes)
+test_output = pd.read_csv(path_to_output)
+
+
+# filter out invalid tests and changes 
+test_data_df['validFrom'] = test_data_df['validFrom'].astype(str)
+test_data_df['validTo'] = test_data_df['validTo'].astype(str)
+test_data_df['validFrom'] = pd.to_datetime(test_data_df['validFrom'], format="%Y%m%d"
+test_data_df['validTo'] = pd.to_datetime(test_data_df['validTo'], format="%Y%m%d"
+test_data_df['now'] = datetime.today().strftime('%Y-%m-%d')
+test_data_df['now'] = pd.to_datetime(test_data_df['now'], format="%Y-%m-%d")
+filter_test_data_df = test_data_df.now.between(test_data_df['validFrom'], test_data_df['validTo'])
+test_data_df = test_data_df.loc[filter_test_data_df]
+
+synth_partner_ids = set(test_data_df['synthPartnerID'])
+
+filter_df_key_dir = raw_repo.df_key_dir.partnerID.isin(synth_partner_ids)
+df_key_dir_filtered = raw_repo.df_key_dir.loc[filter_df_key_dir]
+legacy_partners_ids  = set(df_key_dir_filtered['legacyPartnerID'].tolist())
+synth_legacy_partners_df = df_key_dir_filtered.filter(items=['partnerID', 'legacyPartnerID']).drop_duplicates()
+
+synth_legacy_partner_dict = {}
+for index, synth_legacy_item in synth_legacy_partner_df.iterrows():
+    synth_legacy_partner_dict[synth_legacy_item['PartnerID']] = synth_legacy_item['legacyPartnerID']
+
+print(synth_partner_ids)
+print(legacy_partners_ids)
+print(synth_legacy_partners_df)
+
+
+# filter relevant raw_repo_ dataframes to keep only the synth partner data that is necessary for the tests
+filter_df_advisor = raw_repo.df_advisor.partnerID.isin(synth_partner_ids)
+filter_df_busra = raw_repo.df_busra.partnerID.isin(synth_partner_ids)
+filter_df_contact_contact = raw_repo.df_contact_contact.PARTNER_ID.isin(legacy_partners_ids)
+filter_df_contract= raw_repo.df_contract.partnerID.isin(synth_partner_ids)
+filter_df_investor_profile = raw_repo.df_investor_profile.PARTNER_ID.isin(synth_partner_ids)
+
+raw_repo.df_advisor = raw_repo.df_advisor.loc[filter_df_advisor]
+raw_repo.df_busra = raw_repo.df_busra.loc[filter_df_busra]
+raw_repo.df_contact_contact = raw_repo.df_contact_contact.loc[filter_df_contact_contact]
+raw_repo.df_contract = raw_repo.df_contract.loc[filter_df_contract]
+raw_repo.df_investor_profile = raw_repo.df_investor_profile.loc[filter_df_investor_profile]
+
+
+
+
+
+# section3
+import databricks.koalas as ks
+
+def update_raw_repo_dfs():
+    raw_repo.df_advisor = raw_repo_test_meta_dict['df_advisor']['new_df']
+    raw_repo.df_busra = raw_repo_test_meta_dict['df_busra']['new_df']
+    raw_repo.df_contact_contact = raw_repo_test_meta_dict['df_contact_contact']['new_df']
+    raw_repo.df_contract = raw_repo_test_meta_dict['df_contract']['new_df']
+    raw_repo.df_investor_profile = raw_repo_test_meta_dict['df_investor_profile']['new_df']
+
+def update_append_raw_repo_dfs():
+    for method in dir(raw_repo):
+        if not method in raw_repo_test_meta_dict.keys():
+            continue
+        cur_df = getattr(raw_repo, method)
+        if raw_repo_test_meta_dict[method]['df_type'] =='koalas':
+            cur_to_append = ks.concat(raw_repo_test_meta_dict[method]['to_append'])
+            cur_df = ks.concat([cur_df, cur_to_append], ignore_index=True)
+        else: 
+            cur_to_append = pd.concat(raw_repo_test_meta_dict[method]['to_append'])
+            cur_df = pd.concat([cur_df, cur_to_append], ignore_index=True)
+        raw_repo_test_meta_dict[method]['new_df'] = cur_df
+    update_raw_repo_dfs()
+
+
+raw_repo_test_meta_dict = {
+    'df_advisor': {
+        'to_append': [],
+        'df_type': 'koalas', 
+        'pk': ['dataObjectID'],
+        'id': 'partnerID',
+        'type': 'synth',
+        'actions': [
+            {'field_to_replace': 'PartnerID',
+            'partner_id_to_use': 'synth'}
+        ]
+    },
+    'df_advisor': {
+        'to_append': [],
+        'df_type': 'koalas', 
+        'pk': ['dataObjectID'],
+        'id': 'partnerID',
+        'type': 'synth',
+        'actions': [
+            {'field_to_replace': 'PartnerID',
+            'partner_id_to_use': 'synth'}
+        ]
+    },
+    'df_contact_contact': {
+        'to_append': [],
+        'df_type': 'koalas', 
+        'pk': ['dataObjectID'],
+        'id': 'PARTNER_ID',
+        'type': 'legacy',
+        'actions': [
+            {'field_to_replace': 'PARTNER_ID',
+            'partner_id_to_use': 'legacy'}
+        ]
+    },
+    'df_contract': {
+        'to_append': [],
+        'df_type': 'koalas', 
+        'pk': ['dataObjectID'],
+        'id': 'partnerID',
+        'type': 'synth',
+        'actions': [
+            {'field_to_replace': 'PartnerID',
+            'partner_id_to_use': 'synth'}
+        ]
+    },
+    'df_investor_profile': {
+        'to_append': [],
+        'df_type': 'koalas', 
+        'pk': ['dataObjectID'],
+        'id': 'partnerID',
+        'type': 'synth',
+        'actions': [
+            {'field_to_replace': 'PartnerID',
+            'partner_id_to_use': 'synth'}
+        ]
+    }
+}
+
+test_partner_ids = []
+
+def process_test_data(test_data_df, synth_legacy_partner_dict, raw_repo_test_meta_dict, raw_repo, test_partner_ids):
+    for index, test_partner in test_data_df.iterrows():
+        current_synthetic_id = test_partner['synthPartnerID']
+        current_legacy_id = synth_legacy_partner_dict.get(current_synthetic_id)
+        current_test_synthetic_id = 'TESTID' + str(test_partner['testID'].zfill(10))
+        current_test_legacy_id = 'TESTLEG' + str(test_partner['testID'].zfill(9))
+        test_partner_ids.append(current_test_synthetic_id)
+
+        for method, actions in raw_repo_test_meta_dict.items():
+            current_dataframe = getattr(raw_repo, method, None)
+            if current_dataframe is None:
+                continue
+            for action in actions['actions']:
+                field_id_to_replace = action['field_id_to_replace']
+                current_dataframe_id = getattr(current_dataframe, field_id_to_replace, None)
+                if current_dataframe_id is None:
+                    continue
+                if action['partner_id_to_use'] == 'synth': 
+                    filter_condition = current_dataframe_id.isin([current_synthetic_id])
+                    replacement_id = current_test_synthetic_id
+                else: 
+                    filter_condition = current_dataframe_id.isin([current_legacy_id])
+                    replacement_id = current_test_legacy_id
+                record_to_copy = current_dataframe.loc[filter_condition].copy()
+                record_to_copy[field_id_to_replace] = replacement_id
+                actions['to_append'].append(record_to_copy)
+
+    update_append_raw_repo_dfs()

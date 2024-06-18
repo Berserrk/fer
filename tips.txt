@@ -1,0 +1,5 @@
+Am# ctrl + p: show list of tab in vscode 
+# select a word +  fn f2 : to rename a text 
+# option tab to switch tab in 
+# shift + end or shift + home to select until the end of line or until the start
+# ctrl f8 to move the cursor to the error
