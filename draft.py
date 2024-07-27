@@ -19,7 +19,7 @@ openai.ai_key = os.environ.get('OPENAI_API_KEY')
 response = openai.ChatCompletion.create(
     model = 'gpt-3.5-turbo',
     messages = [
-        {
+        {qwe
             "role":"system",
             "content": system_message
         },
