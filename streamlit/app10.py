@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import pandas as pd
 import duckdb
+from pandas import Timestamp
 
 # Load the countries JSON file
 with open('countries.json', 'r') as f:

@@ -32,9 +32,31 @@ for country, info in categories_label.items():
 
 df = pd.DataFrame(data)
 
-# Editable table in Streamlit
-st.header("Activities Table (Editable)")
-edited_df = st.data_editor(df, use_container_width=True, num_rows="fixed")
+# Function to render the non-editable HTML table
+def render_html_table(dataframe):
+    header_html = "<tr><th>Country</th>"
+    for activity in all_activities:
+        header_html += f"<th>{activity}</th>"
+    header_html += "</tr>"
+
+    rows_html = ""
+    for _, row in dataframe.iterrows():
+        row_html = f"<tr><td>{row['Country']}</td>"
+        for activity in all_activities:
+            if row[activity]:
+                row_html += "<td style='color: green;'>✅</td>"
+            else:
+                row_html += "<td></td>"
+        row_html += "</tr>"
+        rows_html += row_html
+
+    table_html = f"""
+    <table style='border-collapse: collapse; width: 100%;'>
+        <thead style='border-bottom: 2px solid black;'>{header_html}</thead>
+        <tbody>{rows_html}</tbody>
+    </table>
+    """
+    return table_html
 
 # Function to save changes to SQLite database
 def save_to_database(df):
@@ -85,36 +107,38 @@ def save_to_database(df):
     finally:
         conn.close()
 
-# Button to confirm edits
-if st.button("Update Table"):
-    # Create and display updated HTML table based on edited DataFrame
-    header_html = "<tr><th>Country</th>"
-    for activity in all_activities:
-        header_html += f"<th>{activity}</th>"
-    header_html += "</tr>"
+# Initialize session state for showing editable table
+if "show_editable" not in st.session_state:
+    st.session_state.show_editable = False
 
-    rows_html = ""
-    for _, row in edited_df.iterrows():
-        row_html = f"<tr><td>{row['Country']}</td>"
-        for activity in all_activities:
-            if row[activity]:
-                row_html += "<td style='color: green;'>✅</td>"
-            else:
-                row_html += "<td></td>"
-        row_html += "</tr>"
-        rows_html += row_html
+# Initialize session state for storing updated data
+if "updated_df" not in st.session_state:
+    st.session_state.updated_df = df.copy()
 
-    table_html = f"""
-    <table style='border-collapse: collapse; width: 100%;'>
-        <thead style='border-bottom: 2px solid black;'>{header_html}</thead>
-        <tbody>{rows_html}</tbody>
-    </table>
-    """
-    st.header("Updated Activities Table")
-    st.markdown(table_html, unsafe_allow_html=True)
+# Render the non-editable table with the most updated data
+st.header("Activities Table (Non-Editable)")
+table_html = render_html_table(st.session_state.updated_df)
+st.markdown(table_html, unsafe_allow_html=True)
 
-    # Save edited DataFrame to the database
-    save_to_database(edited_df)
+# Button to show the editable table
+if st.button("Edit Table"):
+    st.session_state.show_editable = True
+
+# Editable table in Streamlit (visible only if button is clicked)
+if st.session_state.show_editable:
+    st.header("Activities Table (Editable)")
+    edited_df = st.data_editor(st.session_state.updated_df, use_container_width=True, num_rows="fixed")
+
+    # Button to confirm edits
+    if st.button("Update Table"):
+        # Update the non-editable table to reflect the edited DataFrame
+        st.session_state.updated_df = edited_df.copy()  # Update the stored DataFrame
+
+        # Save edited DataFrame to the database
+        save_to_database(edited_df)
+
+        # Hide the editable table after updating
+        st.session_state.show_editable = False
 
 # Add description section
 st.header("Description")
