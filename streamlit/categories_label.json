@@ -15,7 +15,6 @@
         "continent": "Europe",
         "activities": [
             "Restaurant"
-
         ]
     },
     "Spain": {
@@ -55,15 +54,14 @@
         "continent": "South America",
         "activities": [
             "Restaurant",
-            "São Paulo",
-            "Rio de Janeiro"
+            "Sao Paulo"
         ]
     },
     "Argentina": {
         "continent": "South America",
         "activities": [
             "Restaurant",
-            "Sport",
+            "sport",
             "Cinema"
         ]
     },
@@ -85,7 +83,7 @@
         "continent": "South America",
         "activities": [
             "Restaurant",
-            "Sport"
+            "sport"
         ]
     }
 }
