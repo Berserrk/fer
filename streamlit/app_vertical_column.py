@@ -31,6 +31,8 @@ red_cross = '<span style="color: red;">❌</span>'
 # Replace True with a green checkmark and False with a red cross
 df_styled = df.applymap(lambda x: green_checkmark if x else red_cross)
 
+
+
 st.markdown(
     """
     <style>
@@ -52,6 +54,12 @@ if "edit_mode" not in st.session_state:
     st.session_state.edit_mode = False
 if "final_data" not in st.session_state:
     st.session_state.final_data = df.copy()  # Store the original data
+
+# Configure grid options
+gb = GridOptionsBuilder.from_dataframe(df_styled)
+gb.configure_default_column(groupable=True, editable=True)
+gb.configure_column("Money Laundering", pinned='left')  # Freeze the 'Money Laundering' column
+grid_options = gb.build()
 
 # Display the editable or static view based on the edit mode
 with st.form("main_form"):

@@ -3,27 +3,33 @@ import pandas as pd
 
 # Sample DataFrame
 data = {
-    "Money Laundering": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "Terrorist Financing": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "Criminal Organization": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "Tax evasion": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "Bribery and corruption": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "Sanctions evasion": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "Modern slavery": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "Drug trafficking": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "The fraud and money laundering case involved": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "AMoney Laundering": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "ATerrorist Financing": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "ACriminal Organization": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "ATax evasion": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "ABribery and corruption": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "ASanctions evasion": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "AModern slavery": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "ADrug trafficking": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    "AThe fraud and money laundering case involved": [13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+    "Money Laundering": [True, False, True],
+    "Terrorist Financing": [True, False, True],
+    "Criminal Organization": [True, False, True],
+    "Tax evasion": [True, False, True],
+    "Bribery and corruption": [True, False, True],
+    "Sanctions evasion": [True, False, True],
+    "Modern slavery": [True, False, True],
+    "Drug trafficking": [True, False, True],
+    "The fraud and money laundering case involved": [True, False, True],
+    "AMoney Laundering": [True, False, True],
+    "ATerrorist Financing": [True, False, True],
+    "ACriminal Organization": [True, False, True],
+    "ATax evasion": [True, False, True],
+    "ABribery and corruption": [True, False, True],
+    "ASanctions evasion": [True, False, True],
+    "AModern slavery": [True, False, True],
+    "ADrug trafficking": [True, False, True],
+    "AThe fraud and money laundering case involved": [True, False, True],
 }
 df = pd.DataFrame(data)
 
+# Style for the checkmark and cross symbols
+green_checkmark = '<span style="color: green;">✔️</span>'
+red_cross = '<span style="color: red;">❌</span>'
+
+# Replace True with a green checkmark and False with a red cross
+df_styled = df.applymap(lambda x: green_checkmark if x else red_cross)
 
 st.markdown(
     """
@@ -99,25 +105,26 @@ with st.form("main_form"):
         st.markdown("<div class='spacing'></div>", unsafe_allow_html=True)
 
         # Filter the DataFrame based on selected columns
-        filtered_df = st.session_state.final_data[columns_to_show]
+        filtered_df = df_styled[columns_to_show]
 
         # Generate HTML table with refined CSS for rotated headers and scrollbars
         html_table = f"""
         <style>
             .table-container {{
                 width: 100%;
-                max-height: 400px;
-                overflow-x: scroll;  /* Always show horizontal scrollbar */
-                overflow-y: scroll;  /* Always show vertical scrollbar */
+                height: 600px; /* Ensure a fixed height for the container */
+                overflow-x: auto;  /* Always show horizontal scrollbar */
+                overflow-y: auto;  /* Always show vertical scrollbar */
             }}
             table.custom-table {{
                 border-collapse: collapse;
-                width: max-content;
-                min-width: 100%;
+                width: 100%;  /* Set table width to 100% */
+                table-layout: auto; /* Allow table to automatically adjust column widths */
             }}
             th, td {{
                 min-width: 150px; /* Adjust the minimum column width as needed */
-                padding: 8px;
+                padding: 12px;  /* Increased padding for better visibility */
+                font-size: 14px;  /* Increased font size */
             }}
             th {{
                 writing-mode: vertical-rl;
@@ -129,13 +136,13 @@ with st.form("main_form"):
                 white-space: normal;  /* Allow text to break into multiple lines */
                 word-wrap: break-word; /* Ensure long text breaks */
                 max-width: 500px;  /* Adjust this value to control how long text can be before wrapping */
-                font-size: 10px;  /* Smaller font size */
+                font-size: 14px;  /* Increased font size for better visibility */
                 background-color: transparent;  /* Remove background */
             }}
             td {{
                 border: 1px solid #dddddd;
                 text-align: center;
-                font-size: 12px;  /* Consistent font size with headers */
+                font-size: 14px;  /* Increased font size for better visibility */
             }}
         </style>
         <div class="table-container">
