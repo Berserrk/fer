@@ -12,7 +12,6 @@ data = {
     "Modern slavery": [10, 11, 12],
     "Drug trafficking": [10, 11, 12],
     "The fraud and money laundering case involved": [10, 11, 12],
-
 }
 df = pd.DataFrame(data)
 
@@ -23,7 +22,7 @@ st.markdown(
         width: 100% !important; /* Make the multiselect wider */
     }
     .spacing {
-        margin-top: 1px; /* Adjust the margin for more spacing */
+        margin-top: 20px; /* Adjust the margin for more spacing */
     }
     </style>
     """,
@@ -31,7 +30,6 @@ st.markdown(
 )
 
 st.markdown("<div class='spacing'></div>", unsafe_allow_html=True)
-
 # Initialize the session state for edit mode and storing data
 if "edit_mode" not in st.session_state:
     st.session_state.edit_mode = False
@@ -63,12 +61,12 @@ else:
             width: 100% !important; /* Make the multiselect wider */
         }
         .spacing {
-            margin-top: 100px; /* Adjust the margin for more spacing */
+            margin-top: 20px; /* Adjust the margin for more spacing */
         }
         .header-row {
             display: flex;
             justify-content: center;
-            gap: 1px;
+            gap: 15px;
             margin-bottom: 15px;
         }
         .header-row div {
@@ -110,15 +108,19 @@ else:
         th {{
             writing-mode: vertical-rl;
             transform: rotate(189deg);
-            height: 80px;  /* Adjusted height */
-            white-space: nowrap;
+            border: none;  /* Removed border for column names */
+            vertical-align: bottom;
+            text-align: center;
+            height: 150px;  /* Adjusted height */
+            white-space: normal;  /* Allow text to break into multiple lines */
+            word-wrap: break-word; /* Ensure long text breaks */
+            max-width: 500px;  /* Adjust this value to control how long text can be before wrapping */
             font-size: 10px;  /* Smaller font size */
-            border: none; /* Remove border from headers */
-            background-color: transparent; /* Optional: Make background transparent */
+            background-color: transparent;  /* Remove background */
         }}
         td {{
             border: 1px solid #dddddd;
-            padding: 20px;
+            padding: 5px;
             text-align: center;
             font-size: 12px;  /* Consistent font size with headers */
         }}
