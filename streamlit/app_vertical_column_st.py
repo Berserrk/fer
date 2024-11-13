@@ -12,26 +12,10 @@ data = {
     "Modern slavery": [10, 11, 12],
     "Drug trafficking": [10, 11, 12],
     "The fraud and money laundering case involved": [10, 11, 12],
-    "column_10": [10, 11, 12],
-    "column_11": [10, 11, 12],
-    "column_12": [10, 11, 12],
-    "column_13": [10, 11, 12],
-    "column_14": [10, 11, 12],
-    "column_15": [10, 11, 12],
-    "column_16": [10, 11, 12],
-    "column_17": [10, 11, 12],
-    "column_18": [10, 11, 12],
-    "column_19": [10, 11, 12],
-    "column_20": [10, 11, 12],
-    "column_21": [10, 11, 12],
-    "column_22": [10, 11, 12],
-    "column_23": [10, 11, 12],
-    "column_24": [10, 11, 12],
-    "column_25": [10, 11, 12],
-    "column_26": [10, 11, 12],
-    "column_27": [10, 11, 12],
+
 }
 df = pd.DataFrame(data)
+
 st.markdown(
     """
     <style>
@@ -39,15 +23,15 @@ st.markdown(
         width: 100% !important; /* Make the multiselect wider */
     }
     .spacing {
-        margin-top: 20px; /* Adjust the margin for more spacing */
+        margin-top: 1px; /* Adjust the margin for more spacing */
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-
 st.markdown("<div class='spacing'></div>", unsafe_allow_html=True)
+
 # Initialize the session state for edit mode and storing data
 if "edit_mode" not in st.session_state:
     st.session_state.edit_mode = False
@@ -72,7 +56,6 @@ if st.session_state.edit_mode:
 else:
     # Non-editable HTML table view
     # Multiselect for choosing columns to display
-# Inject custom CSS to make the multiselect wider
     st.markdown(
         """
         <style>
@@ -80,7 +63,21 @@ else:
             width: 100% !important; /* Make the multiselect wider */
         }
         .spacing {
-            margin-top: 20px; /* Adjust the margin for more spacing */
+            margin-top: 100px; /* Adjust the margin for more spacing */
+        }
+        .header-row {
+            display: flex;
+            justify-content: center;
+            gap: 1px;
+            margin-bottom: 15px;
+        }
+        .header-row div {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-size: 10px; /* Smaller font size */
+            font-weight: normal; /* Remove bold styling */
+            text-align: center;
+            color: #333;  /* Adjust color as needed */
         }
         </style>
         """,
@@ -94,12 +91,15 @@ else:
     )
     # Add space between the multiselect and the table
     st.write("")  # Adds a blank line (can add more if needed)
+    st.write("")  # Adds a blank line (can add more if needed)
+    st.write("")  # Adds a blank line (can add more if needed)
+    st.write("")  # Adds a blank line (can add more if needed)
     st.markdown("<div class='spacing'></div>", unsafe_allow_html=True)
 
     
     # Filter the DataFrame based on selected columns
     filtered_df = st.session_state.final_data[columns_to_show]
-    
+
     # Generate HTML table with refined CSS for rotated headers
     html_table = f"""
     <style>
@@ -110,19 +110,17 @@ else:
         th {{
             writing-mode: vertical-rl;
             transform: rotate(189deg);
-            # padding: 5px;
-            border: 1px solid #dddddd;
-            vertical-align: bottom;
-            text-align: center;
             height: 80px;  /* Adjusted height */
             white-space: nowrap;
-            font-size: 14px;  /* Smaller font size */
+            font-size: 10px;  /* Smaller font size */
+            border: none; /* Remove border from headers */
+            background-color: transparent; /* Optional: Make background transparent */
         }}
         td {{
             border: 1px solid #dddddd;
-            padding: 5px;
+            padding: 20px;
             text-align: center;
-            font-size: 14px;  /* Consistent font size with headers */
+            font-size: 12px;  /* Consistent font size with headers */
         }}
     </style>
     <table class="custom-table">
