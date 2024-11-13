@@ -11,7 +11,7 @@ data = {
     "Sanctions evasion": [10, 11, 12],
     "Modern slavery": [10, 11, 12],
     "Drug trafficking": [10, 11, 12],
-    "column_9": [10, 11, 12],
+    "The fraud and money laundering case involved": [10, 11, 12],
     "column_10": [10, 11, 12],
     "column_11": [10, 11, 12],
     "column_12": [10, 11, 12],
@@ -57,6 +57,8 @@ if st.session_state.edit_mode:
 else:
     # Non-editable HTML table view
     # Multiselect for choosing columns to display
+# Inject custom CSS to make the multiselect wider
+
     columns_to_show = st.multiselect(
         "Select columns to display",
         options=st.session_state.final_data.columns,
