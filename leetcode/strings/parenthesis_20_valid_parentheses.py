@@ -5,6 +5,7 @@ def valid_parentheses(s:str):
         "}":"{"
     }
     stack = []
+    
     for p in s:
         if p in valid_p_list.values():
             stack.append(p)

@@ -30,3 +30,4 @@ need :
 coreruler_ner : run  the pipeline 
 rules: utilise les output pour verifier les rules dessus
 '''
+qwe
