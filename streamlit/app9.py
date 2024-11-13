@@ -5,6 +5,8 @@ import json
 # Load the countries JSON file
 with open('countries.json', 'r') as f:
     country_status = json.load(f)
+with open('categories_label.json', 'r') as f:
+    categories_label = json.load(f)
 
 # Load the capitals JSON file
 with open('dict_response_full_text.json', 'r') as f:

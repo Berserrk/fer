@@ -1,0 +1,240 @@
+{
+    "metadata": {
+        "processing_date": "2024-11-03T09:41:44.330688"
+    },
+    "entities": {
+        "MISC": [
+            {
+                "main": "Russian",
+                "variations": [
+                    "Chinese",
+                    "Japanese",
+                    "Korean",
+                    "Japanese",
+                    "German"
+                ]
+            },
+            {
+                "main": "Cambridge",
+                "variations": []
+            }
+        ],
+        "PER": [
+            {
+                "main": "Vladimir Putin",
+                "variations": [
+                    "Putin",
+                    "Putin"
+                ]
+            },
+            {
+                "main": "Xi Jin ##ping",
+                "variations": [
+                    "Xi",
+                    "Xi"
+                ]
+            },
+            {
+                "main": "Tim Cook",
+                "variations": [
+                    "Cook"
+                ]
+            },
+            {
+                "main": "Steve Job ##s",
+                "variations": []
+            },
+            {
+                "main": "Sa ##ty ##a Na ##dell ##a",
+                "variations": []
+            },
+            {
+                "main": "Erik ten Ha ##g",
+                "variations": []
+            },
+            {
+                "main": "P ##ep Guard ##iol ##a",
+                "variations": []
+            },
+            {
+                "main": "El ##on Mu ##sk",
+                "variations": [
+                    "Mu ##sk",
+                    "##yes",
+                    "Fu ##mio",
+                    "##shi",
+                    "##ye"
+                ]
+            },
+            {
+                "main": "Jeff Be ##zo ##s",
+                "variations": []
+            },
+            {
+                "main": "C ##lau ##dine Gay",
+                "variations": []
+            },
+            {
+                "main": "An ##t ##\u00f3n ##io G ##uter ##res",
+                "variations": []
+            },
+            {
+                "main": "Ted",
+                "variations": []
+            },
+            {
+                "main": "Olaf",
+                "variations": []
+            },
+            {
+                "main": "Ursula von",
+                "variations": []
+            },
+            {
+                "main": "Martin",
+                "variations": []
+            }
+        ],
+        "ORG": [
+            {
+                "main": "Apple",
+                "variations": [
+                    "Apple Inc",
+                    "Apple",
+                    "Microsoft Corporation",
+                    "Corporate Development",
+                    "X Corp"
+                ]
+            },
+            {
+                "main": "Development Manchester United",
+                "variations": [
+                    "Man United",
+                    "Manchester City",
+                    "City",
+                    "United Nations",
+                    "UN",
+                    "New York City",
+                    "World Health Organization",
+                    "Le"
+                ]
+            },
+            {
+                "main": "Red Devils",
+                "variations": []
+            },
+            {
+                "main": "Te ##sla",
+                "variations": [
+                    "Space ##X",
+                    "##ros Ad ##han ##om G ##he ##bre",
+                    "##us",
+                    "##da",
+                    "Yo ##on Su ##k Ye ##ol",
+                    "Sc ##hol ##z",
+                    "##n",
+                    "Sc ##orse ##se",
+                    "Sc ##orse"
+                ]
+            },
+            {
+                "main": "Twitter",
+                "variations": []
+            },
+            {
+                "main": "Amazon",
+                "variations": []
+            },
+            {
+                "main": "Harvard University",
+                "variations": [
+                    "MIT",
+                    "Massachusetts Institute of Technology",
+                    "Stanford University"
+                ]
+            },
+            {
+                "main": "WHO",
+                "variations": [
+                    "WHO"
+                ]
+            },
+            {
+                "main": "Ki",
+                "variations": []
+            },
+            {
+                "main": "South",
+                "variations": []
+            },
+            {
+                "main": "Ministry",
+                "variations": []
+            },
+            {
+                "main": "European Commission",
+                "variations": []
+            },
+            {
+                "main": "EC",
+                "variations": []
+            },
+            {
+                "main": "News Famous",
+                "variations": []
+            },
+            {
+                "main": "Universal Studios",
+                "variations": []
+            }
+        ],
+        "LOC": [
+            {
+                "main": "Moscow",
+                "variations": [
+                    "Russia",
+                    "Russia",
+                    "China",
+                    "California",
+                    "Seattle",
+                    "Seattle",
+                    "Headquarters",
+                    "Tokyo",
+                    "Los Angeles"
+                ]
+            },
+            {
+                "main": "K ##rem ##lin",
+                "variations": []
+            },
+            {
+                "main": "V ##nu ##kov ##o International Airport",
+                "variations": []
+            },
+            {
+                "main": "Cup ##ert ##ino",
+                "variations": []
+            },
+            {
+                "main": "Old T ##rafford",
+                "variations": []
+            },
+            {
+                "main": "E ##ti ##had Stadium",
+                "variations": []
+            },
+            {
+                "main": "Pa ##lo Alto",
+                "variations": []
+            },
+            {
+                "main": "Geneva",
+                "variations": []
+            },
+            {
+                "main": "Brussels",
+                "variations": []
+            }
+        ]
+    }
+}

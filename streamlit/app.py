@@ -1,69 +1,32 @@
-import streamlit as st
+Task: Analyze a single key from a JSON file, label it with predefined categories, and provide a suggestion.
 
-# Create two columns
-col1, col2 = st.columns(2)
+Input:
+1. Key name: [KEY_NAME]
+2. Key value: [KEY_VALUE]
+3. Predefined categories: [LIST_CATEGORIES_HERE]
 
-# Add headers and place the buttons in the first column and the checkboxes in the second
-col1.header("MESSAGE")
-if col1.button('Germany'):
-    st.session_state.country_clicked = 'Germany'
-if col1.button('France'):
-    st.session_state.country_clicked = 'France'
-if col1.button('Italy'):
-    st.session_state.country_clicked = 'Italy'
-if col1.button('Spain'):
-    st.session_state.country_clicked = 'Spain'
-if col1.button('Portugal'):
-    st.session_state.country_clicked = 'Portugal'
-if col1.button('Netherlands'):
-    st.session_state.country_clicked = 'Netherlands'
-if col1.button('Belgium'):
-    st.session_state.country_clicked = 'Belgium'
-if col1.button('Switzerland'):
-    st.session_state.country_clicked = 'Switzerland'
-if col1.button('Brazil'):
-    st.session_state.country_clicked = 'Brazil'
-if col1.button('Argentina'):
-    st.session_state.country_clicked = 'Argentina'
-if col1.button('Colombia'):
-    st.session_state.country_clicked = 'Colombia'
-if col1.button('Chile'):
-    st.session_state.country_clicked = 'Chile'
-if col1.button('Peru'):
-    st.session_state.country_clicked = 'Peru'
+Instructions:
+1. Examine the provided key name and value.
+2. Determine if the key matches one or more categories from the predefined list.
+3. Create a brief suggestion explaining the categorization or potential use of the key.
+4. Output a JSON object with the following structure:
+   {
+     "key": "[KEY_NAME]",
+     "categories": [...],
+     "suggestion": "..."
+   }
 
-col2.header("CHECKBOX")
-if col2.checkbox('Check me out'):
-    st.write('Look, a checkbox!')
+Output Constraints:
+1. "categories": List of matching category names. Use ["no label"] if no categories match.
+2. "suggestion": Brief explanation or suggestion, under 15 words.
+3. Adhere to the provided GBNF grammar for output structure.
+4. Prioritize speed and accuracy.
 
-# Add a new section for the description
-st.header("DESCRIPTION")
+Example Output:
+{
+  "key": "user_age",
+  "categories": ["demographic", "personal_info"],
+  "suggestion": "Age data for user segmentation and age-restricted content."
+}
 
-if st.button('Germany Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Germany'):
-    st.info('Berlin is the capital of Germany.')
-if st.button('France Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'France'):
-    st.info('Paris is the capital of France.')
-if st.button('Italy Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Italy'):
-    st.info('Rome is the capital of Italy.')
-if st.button('Spain Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Spain'):
-    st.info('Madrid is the capital of Spain.')
-if st.button('Portugal Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Portugal'):
-    st.info('Lisbon is the capital of Portugal.')
-if st.button('Netherlands Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Netherlands'):
-    st.info('Amsterdam is the capital of Netherlands.')
-if st.button('Belgium Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Belgium'):
-    st.info('Brussels is the capital of Belgium.')
-if st.button('Switzerland Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Switzerland'):
-    st.info('Bern is the capital of Switzerland.')
-if st.button('Brazil Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Brazil'):
-    st.info('Brasília is the capital of Brazil.')
-if st.button('Argentina Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Argentina'):
-    st.info('Buenos Aires is the capital of Argentina.')
-if st.button('Colombia Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Colombia'):
-    st.info('Bogotá is the capital of Colombia.')
-if st.button('Chile Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Chile'):
-    st.info('Santiago is the capital of Chile.')
-if st.button('Peru Description') or ('country_clicked' in st.session_state and st.session_state.country_clicked == 'Peru'):
-    st.info('Lima is the capital of Peru.')
-
-st.session_state.country_clicked = ''  # Reset the state after displaying the description
+qwe
