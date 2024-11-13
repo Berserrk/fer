@@ -25,11 +25,40 @@ data = {
     "AThe fraud and money laundering case involved": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
 }
 
+col_new = [
+    "Money Laundering",
+    "Terrorist Financing",
+    "Criminal Organization",
+    "Tax evasion",
+    "Bribery and corruption",
+    "Sanctions evasion",
+    "Modern slavery",
+    "Drug trafficking",
+    "The fraud and money laundering case involved",
+    "AMoney Laundering",
+    "ATerrorist Financing",
+    "ACriminal Organization",
+    "ATax evasion",
+    "ABribery and corruption",
+    "ASanctions evasion",
+    "AModern slavery",
+    "ADrug trafficking",
+    "AThe fraud and money laundering case involved"
+]
+
+# Create initial DataFrame
 df = pd.DataFrame(data)
 
 # Add 'Flagged' column based on whether any risk indicator is True
 boolean_columns = df.columns.drop("Entity")  # Exclude 'Entity' column from checking
 df["Flagged"] = df[boolean_columns].any(axis=1).apply(lambda x: "yes" if x else "no")
+
+# Add 'Comments' column for user input
+df["Comments"] = ""  # Initialize with empty strings
+
+column_new_order = ["Entity", "Flagged", "Comments"] + col_new
+# Reorder DataFrame columns
+df = df[column_new_order]
 
 # Function to apply checkmarks (based on boolean values)
 def apply_checkmarks(df):
@@ -61,7 +90,9 @@ columns_to_show = st.multiselect(
 if "Entity" not in columns_to_show:
     columns_to_show.insert(0, "Entity")
 if "Flagged" not in columns_to_show:
-    columns_to_show.append("Flagged")
+    columns_to_show.insert(1, "Flagged")  # Make sure "Flagged" is second
+if "Comments" not in columns_to_show:
+    columns_to_show.append("Comments")  # Add Comments to the columns to show
 
 # Logic to toggle the display based on edit_mode
 if st.session_state.edit_mode:
@@ -120,6 +151,18 @@ else:
             height: 5px;
             max-width: 15px;
         }}
+        /* Custom style for second column (Terrorist Financing) */
+        th.second-column-header {{
+            writing-mode: horizontal-tb;
+            text-align: center;
+            font-weight: bold;
+        }}
+        /* Custom style for third column (Money Laundering) */
+        th.third-column-header {{
+            writing-mode: horizontal-tb;
+            text-align: center;
+            font-style: italic;
+        }}
         td {{
             border: 1px solid #dddddd;
             text-align: center;
@@ -138,6 +181,8 @@ else:
             <thead>
                 <tr>
                     <th class="first-column-header">{filtered_df.columns[0]}</th>
+                    <th class="first-second-header">{filtered_df.columns[1]}</th>
+                    <th class="first-third-header">{filtered_df.columns[2]}</th>
                     {" ".join(f"<th class='rotate-header'>{col}</th>" for col in filtered_df.columns[1:])}
                 </tr>
             </thead>
