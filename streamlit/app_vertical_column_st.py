@@ -4,34 +4,45 @@ from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Sample DataFrame
 data = {
-    "Money Laundering": [True, False, True],
-    "Terrorist Financing": [True, False, True],
-    "Criminal Organization": [True, False, True],
-    "Tax evasion": [True, False, True],
-    "Bribery and corruption": [True, False, True],
-    "Sanctions evasion": [True, False, True],
-    "Modern slavery": [True, False, True],
-    "Drug trafficking": [True, False, True],
-    "The fraud and money laundering case involved": [True, False, True],
-    "AMoney Laundering": [True, False, True],
-    "ATerrorist Financing": [True, False, True],
-    "ACriminal Organization": [True, False, True],
-    "ATax evasion": [True, False, True],
-    "ABribery and corruption": [True, False, True],
-    "ASanctions evasion": [True, False, True],
-    "AModern slavery": [True, False, True],
-    "ADrug trafficking": [True, False, True],
-    "AThe fraud and money laundering case involved": [True, False, True],
+    "Entity": [f"entity{i+1}" for i in range(18)],
+    "Money Laundering": [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
+    "Terrorist Financing": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "Criminal Organization": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "Tax evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "Bribery and corruption": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "Sanctions evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "Modern slavery": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "Drug trafficking": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "The fraud and money laundering case involved": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "AMoney Laundering": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "ATerrorist Financing": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "ACriminal Organization": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "ATax evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "ABribery and corruption": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "ASanctions evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "AModern slavery": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "ADrug trafficking": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "AThe fraud and money laundering case involved": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
 }
 
 df = pd.DataFrame(data)
 
-# Style for the checkmark and cross symbols
-green_checkmark = '<span style="color: green;">✔️</span>'
-red_cross = '<span style="color: red;">❌</span>'
+# Add 'Flagged' column based on whether any risk indicator is True
+boolean_columns = df.columns.drop("Entity")  # Exclude 'Entity' column from checking
+df["Flagged"] = df[boolean_columns].any(axis=1).apply(lambda x: "yes" if x else "no")
 
-# Replace True with a green checkmark and False with a red cross
-df_styled = df.applymap(lambda x: green_checkmark if x else red_cross)
+# Function to apply checkmarks (based on boolean values)
+def apply_checkmarks(df):
+    df_styled = df.copy()
+    for column in boolean_columns:
+        df_styled[column] = df[column].apply(lambda x: '<span style="color: green;">✔️</span>' if x else '<span style="color: red;">❌</span>')
+    df_styled["Flagged"] = df["Flagged"].apply(lambda x: '<span style="color: green;">✔️</span>' if x == "yes" else '<span style="color: red;">❌</span>')
+    return df_styled
+
+# Function to recalculate the 'Flagged' column after editing
+def update_flagged_column(df):
+    df["Flagged"] = df[boolean_columns].any(axis=1).apply(lambda x: "yes" if x else "no")
+    return df
 
 # Initialize the session state for edit mode and storing data
 if "edit_mode" not in st.session_state:
@@ -46,22 +57,29 @@ columns_to_show = st.multiselect(
     default=st.session_state.final_data.columns  # Show all columns by default
 )
 
-if len(columns_to_show) == 0:
-    # Default to all columns if none selected
-    columns_to_show = st.session_state.final_data.columns
+# Ensure 'Entity' and 'Flagged' columns are always included in columns_to_show
+if "Entity" not in columns_to_show:
+    columns_to_show.insert(0, "Entity")
+if "Flagged" not in columns_to_show:
+    columns_to_show.append("Flagged")
 
 # Logic to toggle the display based on edit_mode
 if st.session_state.edit_mode:
     # Editable DataFrame using st.data_editor
-    st.session_state.edited_df = st.data_editor(st.session_state.final_data, key="editor")
+    edited_df = st.data_editor(st.session_state.final_data, key="editor")
     
     # Finish editing button
     if st.button("Finish Editing"):
-        st.session_state.edit_mode = False
-        st.session_state.final_data = st.session_state.edited_df  # Save the changes
+        # Save the changes
+        st.session_state.final_data = edited_df  # Save the edited DataFrame
+        st.session_state.final_data = update_flagged_column(st.session_state.final_data)  # Recalculate the 'Flagged' column
+        st.session_state.edit_mode = False  # Exit edit mode
 else:
+    # Apply checkmarks to the final data (after edits)
+    styled_df = apply_checkmarks(st.session_state.final_data)
+
     # Filter the DataFrame based on selected columns
-    filtered_df = df_styled[columns_to_show]
+    filtered_df = styled_df[columns_to_show]  # Use the styled DataFrame
 
     # Generate HTML table with refined CSS for rotated headers and scrollbars
     html_table = f"""
@@ -82,18 +100,25 @@ else:
             padding: 12px;  /* Increased padding for better visibility */
             font-size: 14px;  /* Increased font size */
         }}
+        /* Add vertical space between header and first row */
         th {{
+            padding-bottom: 30px; /* Adjust this value to increase/decrease spacing */
+        }}
+        th.rotate-header {{
             writing-mode: vertical-rl;
             transform: rotate(189deg);
-            border: none;  /* Removed border for column names */
             vertical-align: bottom;
             text-align: center;
             height: 150px;  /* Adjusted height */
             white-space: normal;  /* Allow text to break into multiple lines */
             word-wrap: break-word; /* Ensure long text breaks */
             max-width: 500px;  /* Adjust this value to control how long text can be before wrapping */
-            font-size: 14px;  /* Increased font size for better visibility */
-            background-color: transparent;  /* Remove background */
+        }}
+        th.first-column-header {{
+            writing-mode: horizontal-tb; /* Keep the first column header horizontal */
+            text-align: left;
+            height: 5px;
+            max-width: 15px;
         }}
         td {{
             border: 1px solid #dddddd;
@@ -112,7 +137,8 @@ else:
         <table class="custom-table">
             <thead>
                 <tr>
-                    {" ".join(f"<th>{col}</th>" for col in filtered_df.columns)}
+                    <th class="first-column-header">{filtered_df.columns[0]}</th>
+                    {" ".join(f"<th class='rotate-header'>{col}</th>" for col in filtered_df.columns[1:])}
                 </tr>
             </thead>
             <tbody>
@@ -131,12 +157,3 @@ else:
     # Edit table button
     if st.button("Edit Table"):
         st.session_state.edit_mode = True
-
-# Configure grid options to freeze a specific column (if needed)
-gb = GridOptionsBuilder.from_dataframe(df_styled)
-gb.configure_default_column(groupable=True, editable=True)
-gb.configure_column("Money Laundering", pinned='left')  # Freeze the 'Money Laundering' column
-grid_options = gb.build()
-
-# Display AgGrid with frozen column (if needed)
-# response = AgGrid(df_styled, gridOptions=grid_options, allow_unsafe_jscode=True)
