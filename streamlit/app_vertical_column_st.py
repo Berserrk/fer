@@ -32,7 +32,22 @@ data = {
     "column_27": [10, 11, 12],
 }
 df = pd.DataFrame(data)
+st.markdown(
+    """
+    <style>
+    div[data-baseweb="select"] > div {
+        width: 100% !important; /* Make the multiselect wider */
+    }
+    .spacing {
+        margin-top: 20px; /* Adjust the margin for more spacing */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
+
+st.markdown("<div class='spacing'></div>", unsafe_allow_html=True)
 # Initialize the session state for edit mode and storing data
 if "edit_mode" not in st.session_state:
     st.session_state.edit_mode = False
@@ -58,12 +73,29 @@ else:
     # Non-editable HTML table view
     # Multiselect for choosing columns to display
 # Inject custom CSS to make the multiselect wider
+    st.markdown(
+        """
+        <style>
+        div[data-baseweb="select"] > div {
+            width: 100% !important; /* Make the multiselect wider */
+        }
+        .spacing {
+            margin-top: 20px; /* Adjust the margin for more spacing */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
     columns_to_show = st.multiselect(
         "Select columns to display",
         options=st.session_state.final_data.columns,
         default=st.session_state.final_data.columns  # Show all columns by default
     )
+    # Add space between the multiselect and the table
+    st.write("")  # Adds a blank line (can add more if needed)
+    st.markdown("<div class='spacing'></div>", unsafe_allow_html=True)
+
     
     # Filter the DataFrame based on selected columns
     filtered_df = st.session_state.final_data[columns_to_show]
