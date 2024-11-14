@@ -4,6 +4,7 @@ import pandas as pd
 # Sample DataFrame
 data = {
     "Entity": [f"entity{i+1}" for i in range(18)],
+    "Summary": ["summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary"],
     "Money Laundering": [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
     "Terrorist Financing": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
     "Criminal Organization": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],

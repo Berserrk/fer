@@ -4,6 +4,7 @@ import pandas as pd
 # Sample DataFrame
 data = {
     "Entity": [f"entity{i+1}" for i in range(18)],
+    "Summary": ["summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary", "summary"],
     "Money Laundering": [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
     "Terrorist Financing": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
     "Criminal Organization": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
@@ -78,15 +79,10 @@ else:
     # Apply checkmarks to the final data (after edits)
     col_boolean_list.append("Flagged")
     styled_df = apply_checkmarks(st.session_state.final_data)
-    st.write("styled_df")
-    st.write(styled_df)
     # Filter the DataFrame based on selected columns
     filtered_df = styled_df[columns_to_show_in_multiselect]  # Use the styled DataFrame
-    st.write("filtered_df")
-    st.write(filtered_df)
     cols_to_exclude = ["Entity", "Comments", "Flagged"]
     cols_to_keep = [col for col in filtered_df.columns if col not in cols_to_exclude]
-    st.write(cols_to_keep)
     all_cols = list(filtered_df.columns)
     all_cols.remove('Entity')
     all_cols.remove('Comments')
