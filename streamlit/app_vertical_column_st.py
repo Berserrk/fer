@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Sample DataFrame
 data = {
@@ -8,65 +7,42 @@ data = {
     "Money Laundering": [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
     "Terrorist Financing": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
     "Criminal Organization": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "Tax evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "Bribery and corruption": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "Sanctions evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "Modern slavery": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "Drug trafficking": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "The fraud and money laundering case involved": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "AMoney Laundering": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "ATerrorist Financing": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "ACriminal Organization": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "ATax evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "ABribery and corruption": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "ASanctions evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "AModern slavery": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "ADrug trafficking": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
-    "AThe fraud and money laundering case involved": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True],
+    "Tax evasion": [False, False, True, True, False, True, True, False, True, True, False, True, True, False, True, True, False, True]
 }
 
-col_new = [
+col_boolean_list = [
     "Money Laundering",
     "Terrorist Financing",
     "Criminal Organization",
-    "Tax evasion",
-    "Bribery and corruption",
-    "Sanctions evasion",
-    "Modern slavery",
-    "Drug trafficking",
-    "The fraud and money laundering case involved",
-    "AMoney Laundering",
-    "ATerrorist Financing",
-    "ACriminal Organization",
-    "ATax evasion",
-    "ABribery and corruption",
-    "ASanctions evasion",
-    "AModern slavery",
-    "ADrug trafficking",
-    "AThe fraud and money laundering case involved"
+    "Tax evasion"
 ]
 
 # Create initial DataFrame
 df = pd.DataFrame(data)
 
 # Add 'Flagged' column based on whether any risk indicator is True
-boolean_columns = df.columns.drop("Entity")  # Exclude 'Entity' column from checking
+df["Comments"] = ""  # Initialize with empty strings
+boolean_columns = df[col_boolean_list].columns# Exclude 'Entity' column from checking
+
+#Create boolean columns 
 df["Flagged"] = df[boolean_columns].any(axis=1).apply(lambda x: "yes" if x else "no")
 
-# Add 'Comments' column for user input
-df["Comments"] = ""  # Initialize with empty strings
 
-column_new_order = ["Entity", "Flagged", "Comments"] + col_new
-# Reorder DataFrame columns
-df = df[column_new_order]
+# Add 'Comments' column for user input
+# column_new_order = ["Entity", "Flagged", "Comments"] + col_boolean_list
+# # Reorder DataFrame columns
+# df = df[column_new_order]
 
 # Function to apply checkmarks (based on boolean values)
 def apply_checkmarks(df):
-    df_styled = df.copy()
+    df_checkmarked_applied = df.copy()
+    df_checkmarked_applied = df_checkmarked_applied
     for column in boolean_columns:
-        df_styled[column] = df[column].apply(lambda x: '<span style="color: green;">✔️</span>' if x else '<span style="color: red;">❌</span>')
-    df_styled["Flagged"] = df["Flagged"].apply(lambda x: '<span style="color: green;">✔️</span>' if x == "yes" else '<span style="color: red;">❌</span>')
-    return df_styled
+        df_checkmarked_applied[column] = df[column].apply(lambda x: '<span style="color: green;">✔️</span>' if x else '<span style="color: red;">❌</span>')
+    df_checkmarked_applied["Flagged"] = df["Flagged"].apply(lambda x: '<span style="color: green;">✔️</span>' if x == "yes" else '<span style="color: red;">❌</span>')
+    return df_checkmarked_applied
+
+
 
 # Function to recalculate the 'Flagged' column after editing
 def update_flagged_column(df):
@@ -77,22 +53,15 @@ def update_flagged_column(df):
 if "edit_mode" not in st.session_state:
     st.session_state.edit_mode = False
 if "final_data" not in st.session_state:
-    st.session_state.final_data = df.copy()  # Store the original data
+    st.session_state.final_data = df.copy()# Store the original data
 
 # Non-editable HTML table view (outside of form)
-columns_to_show = st.multiselect(
+columns_to_show_in_multiselect = st.multiselect(
     "Select columns to display",
     options=st.session_state.final_data.columns,
-    default=st.session_state.final_data.columns  # Show all columns by default
+    default=st.session_state.final_data.columns # Show all columns by default
 )
 
-# Ensure 'Entity' and 'Flagged' columns are always included in columns_to_show
-if "Entity" not in columns_to_show:
-    columns_to_show.insert(0, "Entity")
-if "Flagged" not in columns_to_show:
-    columns_to_show.insert(1, "Flagged")  # Make sure "Flagged" is second
-if "Comments" not in columns_to_show:
-    columns_to_show.append("Comments")  # Add Comments to the columns to show
 
 # Logic to toggle the display based on edit_mode
 if st.session_state.edit_mode:
@@ -107,11 +76,26 @@ if st.session_state.edit_mode:
         st.session_state.edit_mode = False  # Exit edit mode
 else:
     # Apply checkmarks to the final data (after edits)
+    col_boolean_list.append("Flagged")
     styled_df = apply_checkmarks(st.session_state.final_data)
-
+    st.write("styled_df")
+    st.write(styled_df)
     # Filter the DataFrame based on selected columns
-    filtered_df = styled_df[columns_to_show]  # Use the styled DataFrame
+    filtered_df = styled_df[columns_to_show_in_multiselect]  # Use the styled DataFrame
+    st.write("filtered_df")
+    st.write(filtered_df)
+    cols_to_exclude = ["Entity", "Comments", "Flagged"]
+    cols_to_keep = [col for col in filtered_df.columns if col not in cols_to_exclude]
+    st.write(cols_to_keep)
+    all_cols = list(filtered_df.columns)
+    all_cols.remove('Entity')
+    all_cols.remove('Comments')
+    all_cols.remove('Flagged')
+    desired_cols = cols_to_exclude + all_cols
+    filtered_df = filtered_df[desired_cols]
 
+# Select all columns except the specified ones
+    
     # Generate HTML table with refined CSS for rotated headers and scrollbars
     html_table = f"""
     <style>
@@ -153,15 +137,17 @@ else:
         }}
         /* Custom style for second column (Terrorist Financing) */
         th.second-column-header {{
-            writing-mode: horizontal-tb;
-            text-align: center;
-            font-weight: bold;
+            writing-mode: horizontal-tb; /* Keep the first column header horizontal */
+            text-align: left;
+            height: 5px;
+            max-width: 15px;
         }}
         /* Custom style for third column (Money Laundering) */
         th.third-column-header {{
-            writing-mode: horizontal-tb;
-            text-align: center;
-            font-style: italic;
+            writing-mode: horizontal-tb; /* Keep the first column header horizontal */
+            text-align: left;
+            height: 5px;
+            max-width: 15px;
         }}
         td {{
             border: 1px solid #dddddd;
@@ -175,21 +161,35 @@ else:
             background-color: #fff;
             z-index: 1; /* Ensure it appears above other cells when scrolling */
         }}
+        /* Freeze the second column */
+        td:nth-child(2), th:nth-child(2) {{
+        position: sticky;
+        left: /* width of first column, e.g. */ 100px;
+        background-color: #fff;
+        z-index: 1;
+        }}
+        /* Freeze the third column */
+        td:nth-child(3), th:nth-child(3) {{
+        position: sticky;
+        left:200px;
+        background-color: #fff;
+        z-index: 1;
+        }}
     </style>
     <div class="table-container">
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th class="first-column-header">{filtered_df.columns[0]}</th>
-                    <th class="first-second-header">{filtered_df.columns[1]}</th>
-                    <th class="first-third-header">{filtered_df.columns[2]}</th>
-                    {" ".join(f"<th class='rotate-header'>{col}</th>" for col in filtered_df.columns[1:])}
+                    <th class="first-column-header">{"Entity"}</th>
+                    <th class="second-column-header">{"Comments"}</th>
+                    <th class="third-column-header">{"Flagged"}</th>
+                    {" ".join(f"<th class='rotate-header'>{col}</th>" for col in filtered_df.columns if col not in cols_to_exclude)}
                 </tr>
             </thead>
             <tbody>
                 {" ".join(
                     f"<tr>{''.join(f'<td>{cell}</td>' for cell in row)}</tr>"
-                    for row in filtered_df.values
+                    for row in filtered_df.values 
                 )}
             </tbody>
         </table>
@@ -202,3 +202,4 @@ else:
     # Edit table button
     if st.button("Edit Table"):
         st.session_state.edit_mode = True
+                    # for row in filtered_df.loc[:, ~filtered_df.columns.isin(cols_to_exclude)].values 
