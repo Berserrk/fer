@@ -34,8 +34,8 @@ def force_graph():
                 ]
             };
 
-            const width = 600;
-            const height = 400;
+            const width = 800;
+            const height = 600;
             
             const svg = d3.select("#graph")
                 .append("svg")
@@ -44,8 +44,9 @@ def force_graph():
 
             const simulation = d3.forceSimulation(data.nodes)
                 .force("link", d3.forceLink(data.links).id(d => d.id))
-                .force("charge", d3.forceManyBody().strength(-200))
-                .force("center", d3.forceCenter(width / 2, height / 2));
+                .force("charge", d3.forceManyBody().strength(-400))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("y", d3.forceY(d => d.type === "company" ? height * 0.7 : height * 0.3).strength(1));
 
             const link = svg.append("g")
                 .selectAll("line")
@@ -58,7 +59,7 @@ def force_graph():
                 .data(data.nodes)
                 .join("circle")
                 .attr("class", d => `node-${d.type}`)
-                .attr("r", d => d.type === "company" ? 15 : 10)
+                .attr("r", d => d.type === "company" ? 25 : 20)
                 .call(drag(simulation));
 
             // Add labels
@@ -115,7 +116,7 @@ def force_graph():
     </html>
     """
     
-    components.html(html, height=450)
+    components.html(html, height=650)
 
 def main():
     st.title("People-Company Network Graph")
