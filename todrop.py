@@ -27,26 +27,22 @@ def load_graph_data():
     return {"nodes": nodes, "links": links}
 
 def force_graph(graph_data):
-    # Convert the Python dict to a JavaScript-friendly string
-    graph_data_js = json.dumps(graph_data)
-    
-    html = f"""
+    html = """
     <!DOCTYPE html>
     <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
         <style>
-            .node-person {{ fill: #69b3a2; }}
-            .node-company {{ fill: #404080; }}
-            .link {{ stroke: #999; stroke-opacity: 0.6; }}
-            .node-label {{ font-size: 12px; }}
+            .node-person { fill: #69b3a2; }
+            .node-company { fill: #404080; }
+            .link { stroke: #999; stroke-opacity: 0.6; }
+            .node-label { font-size: 12px; }
         </style>
     </head>
     <body>
         <div id="graph"></div>
         <script>
-            // Load data from Python
-            const data = {graph_data_js};
+            const data = """ + json.dumps(graph_data) + """;
 
             const width = 1500;
             const height = 800;
@@ -72,7 +68,7 @@ def force_graph(graph_data):
                 .selectAll("circle")
                 .data(data.nodes)
                 .join("circle")
-                .attr("class", d => `node-${d.type}`)
+                .attr("class", d => "node-" + d.type)
                 .attr("r", d => d.type === "company" ? 25 : 20)
                 .call(drag(simulation));
 
@@ -86,7 +82,7 @@ def force_graph(graph_data):
                 .attr("dy", 25)
                 .attr("text-anchor", "middle");
 
-            simulation.on("tick", () => {{
+            simulation.on("tick", () => {
                 link
                     .attr("x1", d => d.source.x)
                     .attr("y1", d => d.source.y)
@@ -100,30 +96,30 @@ def force_graph(graph_data):
                 labels
                     .attr("x", d => d.x)
                     .attr("y", d => d.y);
-            }});
+            });
 
-            function drag(simulation) {{
-                function dragstarted(event) {{
+            function drag(simulation) {
+                function dragstarted(event) {
                     if (!event.active) simulation.alphaTarget(0.3).restart();
                     event.subject.fx = event.subject.x;
                     event.subject.fy = event.subject.y;
-                }}
+                }
                 
-                function dragged(event) {{
+                function dragged(event) {
                     event.subject.fx = event.x;
                     event.subject.fy = event.y;
-                }}
+                }
                 
-                function dragended(event) {{
+                function dragended(event) {
                     if (!event.active) simulation.alphaTarget(0);
                     // Nodes will stay where they are dragged
-                }}
+                }
                 
                 return d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended);
-            }}
+            }
         </script>
     </body>
     </html>
