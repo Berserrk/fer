@@ -1,41 +1,55 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import json
 
-def force_graph():
-    html = """
+def load_graph_data():
+    # Load your JSON files
+    try:
+        with open('nodes.json', 'r') as f:
+            nodes = json.load(f)
+        with open('links.json', 'r') as f:
+            links = json.load(f)
+    except FileNotFoundError:
+        # Default data if files not found
+        nodes = [
+            {"id": "Person1", "type": "person"},
+            {"id": "Person2", "type": "person"},
+            {"id": "Person3", "type": "person"},
+            {"id": "CompanyA", "type": "company"},
+            {"id": "CompanyB", "type": "company"}
+        ]
+        links = [
+            {"source": "Person1", "target": "CompanyA"},
+            {"source": "Person2", "target": "CompanyA"},
+            {"source": "Person2", "target": "CompanyB"},
+            {"source": "Person3", "target": "CompanyB"}
+        ]
+    return {"nodes": nodes, "links": links}
+
+def force_graph(graph_data):
+    # Convert the Python dict to a JavaScript-friendly string
+    graph_data_js = json.dumps(graph_data)
+    
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
         <style>
-            .node-person { fill: #69b3a2; }
-            .node-company { fill: #404080; }
-            .link { stroke: #999; stroke-opacity: 0.6; }
-            .node-label { font-size: 12px; }
+            .node-person {{ fill: #69b3a2; }}
+            .node-company {{ fill: #404080; }}
+            .link {{ stroke: #999; stroke-opacity: 0.6; }}
+            .node-label {{ font-size: 12px; }}
         </style>
     </head>
     <body>
         <div id="graph"></div>
         <script>
-            // Data with people and companies
-            const data = {
-                nodes: [
-                    {id: "Person1", type: "person"},
-                    {id: "Person2", type: "person"},
-                    {id: "Person3", type: "person"},
-                    {id: "CompanyA", type: "company"},
-                    {id: "CompanyB", type: "company"}
-                ],
-                links: [
-                    {source: "Person1", target: "CompanyA"},
-                    {source: "Person2", target: "CompanyA"},
-                    {source: "Person2", target: "CompanyB"},
-                    {source: "Person3", target: "CompanyB"}
-                ]
-            };
+            // Load data from Python
+            const data = {graph_data_js};
 
-            const width = 800;
-            const height = 600;
+            const width = 1500;
+            const height = 800;
             
             const svg = d3.select("#graph")
                 .append("svg")
@@ -62,17 +76,17 @@ def force_graph():
                 .attr("r", d => d.type === "company" ? 25 : 20)
                 .call(drag(simulation));
 
-            // Add labels
             const labels = svg.append("g")
                 .selectAll("text")
                 .data(data.nodes)
                 .join("text")
                 .attr("class", "node-label")
                 .text(d => d.id)
-                .attr("dx", 15)
-                .attr("dy", 5);
+                .attr("dx", 0)
+                .attr("dy", 25)
+                .attr("text-anchor", "middle");
 
-            simulation.on("tick", () => {
+            simulation.on("tick", () => {{
                 link
                     .attr("x1", d => d.source.x)
                     .attr("y1", d => d.source.y)
@@ -86,41 +100,41 @@ def force_graph():
                 labels
                     .attr("x", d => d.x)
                     .attr("y", d => d.y);
-            });
+            }});
 
-            function drag(simulation) {
-                function dragstarted(event) {
+            function drag(simulation) {{
+                function dragstarted(event) {{
                     if (!event.active) simulation.alphaTarget(0.3).restart();
                     event.subject.fx = event.subject.x;
                     event.subject.fy = event.subject.y;
-                }
+                }}
                 
-                function dragged(event) {
+                function dragged(event) {{
                     event.subject.fx = event.x;
                     event.subject.fy = event.y;
-                }
+                }}
                 
-                function dragended(event) {
+                function dragended(event) {{
                     if (!event.active) simulation.alphaTarget(0);
-                    event.subject.fx = null;
-                    event.subject.fy = null;
-                }
+                    // Nodes will stay where they are dragged
+                }}
                 
                 return d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended);
-            }
+            }}
         </script>
     </body>
     </html>
     """
     
-    components.html(html, height=650)
+    components.html(html, height=850)
 
 def main():
     st.title("People-Company Network Graph")
-    force_graph()
+    graph_data = load_graph_data()
+    force_graph(graph_data)
 
 if __name__ == "__main__":
     main()
