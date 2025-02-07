@@ -1,25 +1,31 @@
-import json
-import re
+Here's a Python solution to create the dataframe with bidirectional relationships:
 
-def convert_json_to_string(file_path):
-    # Read the JSON file
-    with open(file_path, 'r') as file:
-        json_content = json.load(file)
+```python
+import pandas as pd
+
+def create_bidirectional_df(data_dict):
+    # Create initial dataframe
+    df = pd.DataFrame([(k, ', '.join(v)) for k, v in data_dict.items()],
+                     columns=['entity', 'linked_entities'])
     
-    # Convert to string with indentation
-    json_str = json.dumps(json_content, indent=2)
+    # Create additional rows for bidirectional relationships
+    new_rows = []
+    for entity, linked in data_dict.items():
+        for linked_entity in linked:
+            if linked_entity not in data_dict:
+                # Get all entities that link to this one
+                related = [e for e, l in data_dict.items() if linked_entity in l]
+                new_rows.append({
+                    'entity': linked_entity,
+                    'linked_entities': ', '.join(related)
+                })
     
-    # Remove quotes from keys using regex
-    # This pattern matches quoted keys in JSON
-    unquoted = re.sub(r'"(\w+)":', r'\1:', json_str)
-    
-    return unquoted
+    return pd.concat([df, pd.DataFrame(new_rows)]).drop_duplicates()
 
 # Example usage
-file_path = 'your_file.json'  # Replace with your JSON file path
-result = convert_json_to_string(file_path)
-print(result)
-
-# Optionally save to a new file
-with open('converted_output.txt', 'w') as f:
-    f.write(result)
+data = {
+    'entity1': ['entity2', 'entity3']
+}
+df = create_bidirectional_df(data)
+print(df)
+```
