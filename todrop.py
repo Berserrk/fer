@@ -1,29 +1,26 @@
-import pandas as pd
-from itertools import chain
+import streamlit as st
+from streamlit_cytoscapejs import cytoscape
 
-def get_unique_pairs(df):
-    # Create pairs from each row
-    pairs = [(row['entity'], linked_entity) 
-             for _, row in df.iterrows() 
-             for linked_entity in row['linked_entities']]
-    
-    # Convert to set of frozensets to remove duplicates regardless of order
-    unique_pairs = set(frozenset((a, b)) for a, b in pairs)
-    
-    # Convert back to list of tuples with consistent ordering
-    result = [(tuple(pair)) for pair in unique_pairs]
-    
-    return result
-
-# Example usage
-data = {
-    'entity': ['entity1', 'entity2'],
-    'linked_entities': [['compA', 'entity2'], ['entity1', 'compB']]
+# Example showing different layouts
+layouts = {
+    'random': {'name': 'random'},
+    'grid': {'name': 'grid'},
+    'circle': {'name': 'circle'},
+    'concentric': {'name': 'concentric'},
+    'breadthfirst': {'name': 'breadthfirst'},
+    'cose': {'name': 'cose'},
+    'cola': {'name': 'cola'},
+    'euler': {'name': 'euler'},
+    'spread': {'name': 'spread'},
+    'dagre': {'name': 'dagre'},
+    'klay': {'name': 'klay'}
 }
 
-df = pd.DataFrame(data)
-pairs = get_unique_pairs(df)
+# Layout selector
+selected_layout = st.selectbox('Select Layout', list(layouts.keys()))
 
-# Print results
-for pair in pairs:
-    print(f"{pair[0]} - {pair[1]}")
+cytoscape(
+    elements=elements,
+    layout=layouts[selected_layout],
+    key='graph'
+)
