@@ -1,29 +1,29 @@
 import pandas as pd
+from itertools import chain
 
-def create_bidirectional_df(data_dict):
-   rows = []
-   for entity, linked in data_dict.items():
-       rows.append({
-           'entity': entity, 
-           'linked_entities': ', '.join(sorted(linked))  # Sort for consistent comparison
-       })
-       
-       for linked_entity in linked:
-           other_entities = [e for e in linked if e != linked_entity]
-           if entity not in other_entities:
-               other_entities.append(entity)
-           rows.append({
-               'entity': linked_entity,
-               'linked_entities': ', '.join(sorted(other_entities))
-           })
-   
-   # Create df and aggregate by entity
-   df = pd.DataFrame(rows)
-   df = df.groupby('entity')['linked_entities'].agg(lambda x: ', '.join(sorted(set(x.str.split(', ').sum())))).reset_index()
-   
-   return df
+def get_unique_pairs(df):
+    # Create pairs from each row
+    pairs = [(row['entity'], linked_entity) 
+             for _, row in df.iterrows() 
+             for linked_entity in row['linked_entities']]
+    
+    # Convert to set of frozensets to remove duplicates regardless of order
+    unique_pairs = set(frozenset((a, b)) for a, b in pairs)
+    
+    # Convert back to list of tuples with consistent ordering
+    result = [(tuple(pair)) for pair in unique_pairs]
+    
+    return result
 
-# Example 
-data = {'entity1': ['entity2', 'entity3', 'entity2']}
-df = create_bidirectional_df(data)
-print(df)
+# Example usage
+data = {
+    'entity': ['entity1', 'entity2'],
+    'linked_entities': [['compA', 'entity2'], ['entity1', 'compB']]
+}
+
+df = pd.DataFrame(data)
+pairs = get_unique_pairs(df)
+
+# Print results
+for pair in pairs:
+    print(f"{pair[0]} - {pair[1]}")
