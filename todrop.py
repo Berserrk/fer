@@ -1,19 +1,6 @@
-You are given a list of entity names. Your task is to identify and keep only the proper names of specific people and organizations, while strictly removing generic roles, job titles, pronouns, and vague references.
-
-Instructions:
-	1.	Analyze each entity and determine if it is a proper name of a person or an organization.
-	2.	Justify your decision by explaining why the entity is either included or excluded.
-	3.	Return a structured JSON output with both the filtered entities and the reasoning for exclusion.
-
-Inclusion Rules:
-
-✅ Keep Only:
-	•	Names of specific people (e.g., "Barack Obama", "Marie Curie").
-	•	Names of organizations, companies, or institutions (e.g., "Google", "United Nations", "NASA").
-
-Strict Exclusion Rules:
-
-❌ Remove and Explain Why:
-	•	General job titles (e.g., "officials", "senior officials", "managers", "chairman", "director") → These are roles, not specific entities.
-	•	Pronouns and vague references (e.g., "he", "she", "they", "spokesperson") → These do not refer to named entities.
-	•	Non-specific group names (e.g., "the administration", "the board", "government representatives") → These do not indicate a proper name.
+	“Determine whether the given entity refers to either:
+1. A person’s name (e.g., Elon Musk, Barack Obama) OR
+2. An organization, company, or brand name (e.g., Apple, Tesla, Microsoft).
+If the entity fits either category, return it exactly as it is.
+If it refers to a group of people (e.g., Chinese brokers, Turkish refineries, managers) or contains a job title (e.g., Apple spokeswoman), return an empty string.
+If you are unsure, assume it is a valid name and return it. Do not provide explanations or additional text.”
