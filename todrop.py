@@ -1,89 +1,32 @@
-# Define the relationship types (categories of connections)
-relationship_types = [
-    'Ownership', 
-    'Association', 
-    'Criminal Involvement', 
-    'Affiliation', 
-    'Partnership',
-    'Subcontracting', 
-    'Beneficiary', 
-    'Service Provider', 
-    'Investment', 
-    'Co-Conspirator'
-]
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
-# List of flagged entities (those involved in crime)
-list_flagged = ['rosneck', 'garamyov', 'Desmond']
+# Load Phi-4 model and tokenizer
+model_name = "microsoft/Phi-4"
+device = "mps" if torch.backends.mps.is_available() else "cpu"  # Use Apple MPS if available
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
 
-# Define the relationships in abc
-abc = [
-    ('rikic', 'garamyov'),
-    ('desmond', 'desnodi'),
-    ('ase', 'rosneck')
-]
+# Dictionary of entities and descriptions
+entities = {
+    "Company X": "Involved in fraudulent accounting practices and money laundering.",
+    "Person Y": "Accused of insider trading but later acquitted.",
+    "Organization Z": "Suspected of financing illegal activities but not yet proven.",
+}
 
-# Create the dictionary with flagged information
-relationships = {}
+# Loop through each entity
+for entity, description in entities.items():
+    prompt = f"Analyze the following case:\nEntity: {entity}\nDescription: {description}\n\nBased on this information, has the entity committed a crime? Provide reasoning."
 
-for entity1, entity2 in abc:
-    # Check if each entity is flagged
-    flagged_info = {
-        entity1: entity1 in list_flagged,
-        entity2: entity2 in list_flagged
-    }
+    # Tokenize input
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+
+    # Generate response
+    with torch.no_grad():
+        output = model.generate(**inputs, max_new_tokens=200)
+
+    # Decode response
+    response = tokenizer.decode(output[0], skip_special_tokens=True)
     
-    # Store the result in the dictionary
-    relationships[(entity1, entity2)] = flagged_info
-
-# Display the result
-print(relationships)
-
-
-
-
-You are a compliance assistant tasked with identifying the relationships between pairs of entities such as individuals and companies. Your goal is to determine the type of relationship between the two entities and flag any involved in criminal activities based on the given data.
-
-The relationship types to choose from are as follows:
-- Ownership
-- Association
-- Criminal Involvement
-- Affiliation
-- Partnership
-- Subcontracting
-- Beneficiary
-- Service Provider
-- Investment
-- Co-Conspirator
-
-Entities flagged for crimes are:
-['rosneck', 'garamyov', 'Desmond']
-
-For each pair of entities from the list of relationships below, determine the following:
-1. The type of relationship between the two entities (choose from the predefined types).
-2. Identify which entity is the source and which is the target. The source is the entity with higher responsibility or influence.
-3. Flag any entities involved in criminal activities based on the information provided.
-
-The relationships to evaluate:
-[('rikic', 'garamyov'), ('desmond', 'desnodi'), ('ase', 'rosneck')]
-
-Entities' crime involvement (based on list_flagged):
-- rikic: Not flagged
-- garamyov: Flagged
-- desmond: Flagged
-- desnodi: Not flagged
-- ase: Not flagged
-- rosneck: Flagged
-
-Output your results in the following format:
-- Entity1 - Entity2:
-    - Relationship Type: [Type of relationship]
-    - Source: [Source Entity]
-    - Target: [Target Entity]
-    - Flagged: [List of flagged entities involved]
-
-For example:
-- 'rikic' - 'garamyov':
-    - Relationship Type: [Ownership]
-    - Source: 'garamyov'
-    - Target: 'rikic'
-    - Flagged: ['garamyov']
+    # Print results
+    print(f"**{entity}**:\n{response}\n{'-'*50}")
