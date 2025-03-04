@@ -1,32 +1,42 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
-
-# Load Phi-4 model and tokenizer
-model_name = "microsoft/Phi-4"
-device = "mps" if torch.backends.mps.is_available() else "cpu"  # Use Apple MPS if available
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
-
-# Dictionary of entities and descriptions
-entities = {
-    "Company X": "Involved in fraudulent accounting practices and money laundering.",
-    "Person Y": "Accused of insider trading but later acquitted.",
-    "Organization Z": "Suspected of financing illegal activities but not yet proven.",
+{
+    "Barack Obama": "Former President of the United States, known for the Affordable Care Act",
+    "Michelle Obama": "Former First Lady, author of 'Becoming', advocate for healthy eating",
+    "Barack H. Obama": "44th President of the USA, Nobel Peace Prize winner",
+    "B. Obama": "Ex-U.S. President, first African-American president",
+    "Elon Musk": "CEO of Tesla and SpaceX, known for pushing AI and space exploration",
+    "E. Musk": "Founder of SpaceX, advocate for interplanetary travel, CEO of Tesla",
+    "Jeff Bezos": "Founder of Amazon, space entrepreneur",
+    "J. Bezos": "Blue Origin founder, billionaire investor",
+    "Jeffrey Bezos": "E-commerce pioneer, owner of The Washington Post",
+    "Bill Gates": "Co-founder of Microsoft, philanthropist",
+    "William Gates": "Tech mogul, founded the Bill & Melinda Gates Foundation",
+    "B. Gates": "Billionaire investor, software pioneer, Microsoft co-founder",
+    "Steve Jobs": "Apple co-founder, known for revolutionizing smartphones",
+    "Steven P. Jobs": "Visionary entrepreneur, led Apple’s innovation",
+    "Tim Cook": "Current CEO of Apple, advocate for privacy and sustainability",
+    "T. Cook": "Apple leader, successor to Steve Jobs",
+    "Warren Buffett": "Investor, CEO of Berkshire Hathaway, known for value investing",
+    "W. Buffett": "Financial guru, longtime leader at Berkshire Hathaway",
+    "Sergey Brin": "Google co-founder, AI researcher",
+    "Larry Page": "Google co-founder, Alphabet executive",
+    "L. Page": "Search engine innovator, AI-focused entrepreneur",
+    "Bernie Sanders": "U.S. Senator, advocate for progressive policies",
+    "Bernard Sanders": "Politician known for advocating Medicare for All",
+    "Joe Biden": "46th President of the United States",
+    "J. Biden": "Current U.S. President, formerly Vice President under Obama",
+    "Jordan Peterson": "Psychologist, known for self-help books and cultural commentary",
+    "Jordan B. Peterson": "Canadian professor, author of '12 Rules for Life'",
+    "Peter Jordanson": "Influential speaker on self-improvement and social issues",
+    "Richard Branson": "Founder of Virgin Group, billionaire entrepreneur",
+    "Dick Branson": "Business magnate, known for Virgin Airlines",
+    "Rick Branson": "Investor and adventurer, linked to the Virgin brand"
 }
 
-# Loop through each entity
-for entity, description in entities.items():
-    prompt = f"Analyze the following case:\nEntity: {entity}\nDescription: {description}\n\nBased on this information, has the entity committed a crime? Provide reasoning."
 
-    # Tokenize input
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
+You are an AI that processes a dictionary of entity names and descriptions to group 
+similar entities based on name variations and description similarities. Your goal is to:
+1. Iterate over each entity in the dictionary using a for loop.
+2. Compare its description with every other entity’s description.
+3. Group entities that refer to the same person while keeping distinct entities separate, even if they have similar descriptions.
+4. Return the output as a JSON object where each key is a unique entity and the value is a list of grouped names.
 
-    # Generate response
-    with torch.no_grad():
-        output = model.generate(**inputs, max_new_tokens=200)
-
-    # Decode response
-    response = tokenizer.decode(output[0], skip_special_tokens=True)
-    
-    # Print results
-    print(f"**{entity}**:\n{response}\n{'-'*50}")
