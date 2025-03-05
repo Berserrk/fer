@@ -1,22 +1,4 @@
-relationships = [
-    "Owner/Owned",
-    "Investor/Investee",
-    "Partner/Partner",
-    "Collaborator/Collaborator",
-    "Associate/Associated",
-    "Affiliate/Affiliated",
-    "Supplier/Customer",
-    "Competitor/Competitor",
-    "Employee/Employer",
-    "Advisor/Advisee",
-    "Shareholder/Company",
-    "Contributor/Recipient",
-    "Representative/Represented",
-    "Beneficiary/Benefactor",
-    "Licensor/Licensee",
-    "Victim/Perpetrator",
-    "Witness/Defendant",
-    "Accused/Prosecutor",
-    "Convict/Institution",
-    "Regulator/Regulated"
-]
+Dear Sacha,
+Please find attached the table containing detailed information about the various thresholds specified in the scenario. I have compiled the relevant information and included additional details regarding the AUM thresholds below the table.
+If you have any questions or need further clarification, please do not hesitate to contact me.
+Best regards,
