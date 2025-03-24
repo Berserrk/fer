@@ -19,3 +19,10 @@ if uploaded_files:
     for filename, content in doc_contents.items():
         st.subheader(f"Contents of {filename}")
         st.text_area(f"Content of {filename}", content, height=200)
+
+
+from datetime import datetime
+
+def generate_folder_name():
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"data_folder_{timestamp}"
