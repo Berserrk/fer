@@ -1,108 +1,88 @@
-Sure! Here’s a more polished and expanded version of your text, with improved clarity, structure, and flow while keeping the original ideas intact:
+import dspy
+import os
+from dspy.datasets import Example
+from dspy.teleprompt import BootstrapFewShot
 
-⸻
+# Configure DSPy to use LLaMA-2-13B-chat via Together AI
+together_api_key = os.environ.get("TOGETHER_API_KEY")
+llama = dspy.LM(
+    model='together_ai/togethercomputer/Llama-2-13B-chat',
+    api_key=together_api_key,
+    api_base="https://api.together.xyz/v1",
+    max_tokens=500
+)
+dspy.settings.configure(lm=llama)
 
-Article Detective – Overview
+# Define representative example inputs
+# These examples should be diverse, covering different reasoning patterns and domains
+trainset = [
+    Example(
+        question="What is the capital city of the country where the inventor of the telephone was born?",
+        answer="Ottawa",
+        reasoning="The inventor of the telephone is Alexander Graham Bell, born in Scotland. Scotland is part of the United Kingdom, but Bell later moved to Canada, which is often associated with his work. However, since the question asks about his birth, the country is Scotland (UK). The capital of the UK is London. However, if we consider his significant contributions in Canada, the capital of Canada is Ottawa. Given the context, Ottawa is the more relevant answer."
+    ),
+    Example(
+        question="Who was the president of the U.S. when the first moon landing occurred?",
+        answer="Richard Nixon",
+        reasoning="The first moon landing was Apollo 11 in July 1969. Richard Nixon was inaugurated as U.S. president in January 1969, so he was in office at the time."
+    ),
+    Example(
+        question="What is the largest city in the country whose flag has a red maple leaf?",
+        answer="Toronto",
+        reasoning="The country with a red maple leaf on its flag is Canada. The largest city in Canada by population is Toronto."
+    ),
+    # Limited to 3 examples to simulate a low-data scenario (a limitation)
+]
 
-Article Detective is a powerful application designed to assist users in analyzing articles—particularly investigative or journalistic pieces—with the aim of identifying individuals or organizations potentially involved in criminal activities. The app currently supports document uploads in .docx format, with PDF support under testing and scheduled for release by the end of April.
+# Define a custom metric for evaluation
+def exact_match_metric(example, pred, trace=None):
+    """
+    Metric to evaluate if the predicted answer exactly matches the ground truth.
+    Returns True if the answers match (case-insensitive), False otherwise.
+    """
+    return example.answer.lower() == pred.answer.lower()
 
-At its core, Article Detective leverages advanced natural language processing and large language models (LLMs) to parse, analyze, and cross-reference article content with a historical entity database. This enables users to not only understand the content of the articles they upload but also uncover connections, patterns, and red flags tied to potential criminal behavior.
+# Define the DSPy signature for multi-hop question answering
+class MultiHopQA(dspy.Signature):
+    """Answer a multi-hop question by reasoning through multiple steps."""
+    question = dspy.InputField()
+    answer = dspy.OutputField()
 
-⸻
+# Define the DSPy module using ChainOfThought
+class MultiHopReasoner(dspy.Module):
+    def __init__(self):
+        super().__init__()
+        self.generate = dspy.ChainOfThought(MultiHopQA)
+    
+    def forward(self, question):
+        return self.generate(question=question)
 
-Key Features
+# Initialize the module
+reasoner = MultiHopReasoner()
 
-1. Multi-Document Upload & Intelligent Processing
+# Optimize the pipeline using BootstrapFewShot
+optimizer = BootstrapFewShot(
+    metric=exact_match_metric,
+    max_bootstrapped_demos=3,  # Use up to 3 demonstrations in prompts
+    max_labeled_demos=3,       # Use all available examples
+)
+compiled_reasoner = optimizer.compile(
+    reasoner,
+    trainset=trainset
+)
 
-Users can upload one or multiple articles at once. Upon upload, the application triggers a pipeline of Python scripts powered by LLMs, which perform a series of analytical steps:
-	•	Summary Generation: Condensed overviews of each article.
-	•	Entity Extraction: Identification of people, organizations, and other relevant entities mentioned.
-	•	Entity Resolution: Grouping and consolidating variations of the same entity.
-	•	Entity Exclusion: Filtering out irrelevant or already-known entities.
-	•	Entity Categorization: Sorting entities into first-degree (direct involvement) and second-degree (indirect connection) categories.
-	•	Relationship Mapping: Identifying and outlining links between entities.
+# Test the compiled pipeline
+test_question = "What is the capital of the country where the inventor of the light bulb was born?"
+result = compiled_reasoner(test_question)
+print(f"Question: {test_question}")
+print(f"Answer: {result.answer}")
+print(f"Reasoning: {result.rationale}")
 
-If an article has already been processed before, the app retrieves the previously generated data from the database instead of re-processing, ensuring faster response times and optimized resource usage.
-
-Upcoming Enhancements:
-	•	Ability to define and customize the list of crimes the system should flag.
-	•	Option to predefine a list of entities to be excluded before analysis—ideal for users who already possess context-specific knowledge.
-
-⸻
-
-2. Article Summarization
-
-This feature offers an intelligent, layered summary of uploaded content:
-	•	For a single article, users receive a concise summary paragraph.
-	•	For multiple articles, individual summaries are generated for each article, followed by a composite overview. This final summary emphasizes common threads, shared entities, and potential interconnections between different pieces.
-
-⸻
-
-3. Activities Table (Entity Flagging Dashboard)
-
-This interactive HTML table displays all entities identified and assessed by the system, particularly in relation to the list of crimes provided by the user or pre-set in the application.
-
-Each row represents an entity, and columns include:
-	•	Crime indicators (green checkmarks for confirmed involvement, red crosses otherwise),
-	•	A textual description of the entity,
-	•	A flag status (based on the presence of any criminal activity),
-	•	Editable comment fields.
-
-User Interaction Capabilities:
-	•	Customize Table View: Remove or re-add columns dynamically using the interface.
-	•	Edit Data: Change flag status, add or remove crimes, provide comments, and update entity summaries directly in the table.
-	•	Database Sync: All modifications are saved to the central database, improving data quality and reinforcing future analysis.
-
-Upcoming Feature:
-	•	Integration of historical data insights to further refine flagged entities, drawing on past trends and patterns for enhanced accuracy.
-
-⸻
-
-4. Entity Relationships Graph
-
-This visually rich graph represents entity connections using a node-edge style interface:
-	•	Displays both directly flagged entities and those indirectly linked.
-	•	Shows the type of relationship using seven predefined categories: owner, investor, partner, shareholder, representative, beneficiary, and other.
-
-Interactive Capabilities:
-	•	Full-screen mode for detailed analysis.
-	•	Zoom and drag to explore complex networks.
-	•	Click on an entity to highlight first-degree connections in red and open a detailed information box on the side.
-
-Planned Upgrade:
-	•	The graph will incorporate historical interactions and known relationships from the database to enrich visual insights.
-	•	Potential transition to customizable relationship types defined by business users for increased domain relevance.
-
-⸻
-
-5. Entity Summary Browser
-
-This feature offers a scrollable list of all entities extracted from the articles. When selecting an entity, users see:
-	•	A detailed description of the entity,
-	•	A breakdown of its crime categorization (as flagged by the system).
-
-Future Update:
-	•	If the entity already exists in the database, its description will be refreshed and enhanced using existing data—providing a more complete and updated view over time.
-
-⸻
-
-6. Manual Entity Addition
-
-To complement automated analysis, users have the ability to manually input entities into the system. This includes:
-	•	The entity’s name,
-	•	Associated crimes,
-	•	A custom summary.
-
-Once added, this data is stored in the main database and becomes part of future document analyses. If a manually-added entity appears in later uploads, the system will more accurately identify and flag it based on the existing record.
-
-⸻
-
-A Living System: The More You Use It, the Better It Gets
-
-Article Detective is built on the principle of continuous improvement. Every article processed, every entity flagged, and every manual input contributes to a growing, smarter database. As the system ingests more data, its ability to detect criminal activity and map complex networks becomes increasingly sophisticated.
-
-In short: the more it’s used, the more powerful it becomes.
-
-⸻
-
-Let me know if you’d like this turned into a webpage layout, PDF brochure, or product doc—happy to help shape it however you need.
+# Evaluate on a test example
+test_example = Example(
+    question=test_question,
+    answer="Washington, D.C.",
+    reasoning="The inventor of the light bulb is Thomas Edison, born in the United States. The capital of the U.S. is Washington, D.C."
+)
+evaluation = exact_match_metric(test_example, result)
+print(f"Evaluation (Exact Match): {evaluation}")
