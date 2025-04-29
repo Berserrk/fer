@@ -1,31 +1,37 @@
-# Install these if you haven't
 # pip install dspy transformers torch
 
 import dspy
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-# Step 1: Define a custom LLaMA wrapper for DSPy
+# Step 1: Define your custom LLM wrapper
 class LocalLLaMALM(dspy.LM):
     def __init__(self):
-        # Load your local LLaMA model here
+        # Replace with your own local path
+        model_path = "/path/to/your/local/llama-model"
+
+        # Load tokenizer and model
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        model = AutoModelForCausalLM.from_pretrained(model_path)
+
+        # Create the generation pipeline
         self.generator = pipeline(
             "text-generation",
-            model="TheBloke/Llama-2-7B-Chat-GGML",  # Change this to your model name or path
-            max_new_tokens=100,
-            device=0  # Use 0 for GPU or -1 for CPU
+            model=model,
+            tokenizer=tokenizer,
+            device=0,  # 0 for GPU, -1 for CPU
+            max_new_tokens=100
         )
 
     def __call__(self, prompt, **kwargs):
-        # Generate text and return the full output string
-        outputs = self.generator(prompt, **kwargs)
-        return outputs[0]["generated_text"]
+        output = self.generator(prompt, **kwargs)
+        return output[0]["generated_text"]
 
-# Step 2: Configure DSPy to use your local LLaMA
+# Step 2: Configure DSPy to use your offline LLaMA
 dspy.settings.configure(lm=LocalLLaMALM())
 
-# Step 3: Create a simple predictor
+# Step 3: Create a simple predictor using DSPy
 predictor = dspy.Predict("question -> answer")
 
-# Step 4: Run a prompt
-result = predictor(question="What is the capital of Japan?")
+# Step 4: Ask a question
+result = predictor(question="What is the capital of Germany?")
 print("Answer:", result.answer)
