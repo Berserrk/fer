@@ -10,14 +10,14 @@ logger = logging.getLogger(__name__)
 
 class LocalLLaMALM(dspy.LM):
     def __init__(self, model_path="/path/to/your/llama-model.gguf", **kwargs):
-        super().__init__(model="local-llama", **kwargs)  # Pass kwargs to parent class
+        super().__init__(model="local-llama", **kwargs)
         self.model_path = model_path
         if not os.path.exists(self.model_path):
             raise FileNotFoundError(f"Model file not found at {self.model_path}")
-        self.kwargs = kwargs  # Store kwargs if DSPy expects it as an attribute
+        self.kwargs = kwargs  # Store kwargs for DSPy compatibility
 
     def basic_request(self, prompt, **kwargs):
-        # Merge kwargs from method call with any stored kwargs
+        # Merge kwargs from method call with stored kwargs
         request_kwargs = {**self.kwargs, **kwargs}
 
         # Write prompt to a temporary file to avoid shell injection
@@ -57,7 +57,9 @@ class LocalLLaMALM(dspy.LM):
             os.unlink(tmp_path)  # Clean up temporary file
 
     def __call__(self, prompt, **kwargs):
-        # Fallback for compatibility if DSPy calls __call__ directly
+        # Ensure __call__ delegates to basic_request
+        if not prompt:
+            raise ValueError("Prompt is required for __call__")
         return self.basic_request(prompt, **kwargs)
 
 # Configure DSPy to use the local LLaMA model
