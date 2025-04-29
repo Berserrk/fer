@@ -1,40 +1,45 @@
 import dspy
-import logging
+import dspy
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-class LocalLLaMALM(dspy.LM):
-    def __init__(self, **kwargs):
-        super().__init__(model="local-llama", **kwargs)
-        self.kwargs = kwargs  # Store kwargs for DSPy compatibility
-        logger.info("Initialized LocalLLaMALM")
-
-    def basic_request(self, prompt, **kwargs):
-        logger.info(f"basic_request called with prompt: {prompt}, kwargs: {kwargs}")
-        # Simulate a response (replace with CLI logic later)
-        return {"choices": [{"text": f"Mock response for prompt: {prompt}"}]}
-
-    def __call__(self, prompt=None, **kwargs):
-        logger.info(f"__call__ called with prompt: {prompt}, kwargs: {kwargs}")
-        if prompt is None:
-            logger.error("Prompt is missing in __call__")
-            raise ValueError("Prompt is required for __call__")
-        return self.basic_request(prompt, **kwargs)
-
-# Configure DSPy to use the local LLaMA model
-logger.info("Configuring DSPy with LocalLLaMALM")
-dspy.settings.configure(lm=LocalLLaMALM())
-
-# Define a signature for the predictor
-class QAPredictor(dspy.Signature):
-    """Answer the question based on the input."""
+# Define the signature of your question-answering task
+class QuestionAnswering(dspy.Signature):
+    """Answer questions based on the provided context."""
     question = dspy.InputField()
     answer = dspy.OutputField()
 
-# Create and use the predictor
-logger.info("Creating and running predictor")
-predictor = dspy.Predict(QAPredictor)
-result = predictor(question="What is the capital of France?")
-print("Answer:", result.answer)
+# Create a predictor module
+predictor = dspy.Predict(QuestionAnswering)
+
+# Your question
+my_question = "What is the population of Switzerland?"
+
+# Call the predictor with your question
+prediction = predictor(question=my_question)
+
+# The answer will be in the 'answer' field of the prediction
+answer = prediction.answer
+
+# Print the question and the answer
+print(f"Question: {my_question}")
+print(f"Answer: {answer}")
+# Define the signature of your question-answering task
+class QuestionAnswering(dspy.Signature):
+    """Answer questions based on the provided context."""
+    question = dspy.InputField()
+    answer = dspy.OutputField()
+
+# Create a predictor module
+predictor = dspy.Predict(QuestionAnswering)
+
+# Your question
+my_question = "What is the population of Switzerland?"
+
+# Call the predictor with your question
+prediction = predictor(question=my_question)
+
+# The answer will be in the 'answer' field of the prediction
+answer = prediction.answer
+
+# Print the question and the answer
+print(f"Question: {my_question}")
+print(f"Answer: {answer}")
