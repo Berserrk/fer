@@ -1,22 +1,33 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+import dspy
+from transformers import AutoTokenizer
+from dspy import HFLocalModel
 
-# Set device (GPU if available)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Your local Phi-4 model path
+model_path = "./phi4"
 
-# Local path to your Phi-4 model
-model_path = "./phi4"  # Change this to your actual local path
-
-# Load tokenizer and model from local directory
+# Initialize tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_path)
-model = AutoModelForCausalLM.from_pretrained(model_path).to(device)
 
-# Input prompt
-input_text = "The theory of relativity states that"
-input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
+# Setup DSPy local model wrapper
+local_lm = HFLocalModel(
+    model=model_path,
+    tokenizer=model_path,
+    model_kwargs={
+        "device_map": "auto",
+        "load_in_4bit": True  # Remove if your model is full precision
+    }
+)
 
-# Generate response
-output_ids = model.generate(input_ids, max_length=100)
-output_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+# Set the local model as the default LM for DSPy
+dspy.settings.configure(lm=local_lm)
 
-print(output_text)
+# Quick test program
+class Summarizer(dspy.Signature):
+    """A short summary of the input text."""
+    text = dspy.InputField()
+    summary = dspy.OutputField()
+
+summarizer = dspy.Predict(Summarizer)
+result = summarizer(text="The theory of relativity states that space and time are relative...")
+
+print(result.summary)
