@@ -1,38 +1,47 @@
 import dspy
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
 
-class HuggingFaceLM(dspy.LM):
-    def __init__(self, model, tokenizer, max_tokens=512):
-        super().__init__(model_name=model.config._name_or_path)
-        self.model = model
-        self.tokenizer = tokenizer
-        self.max_tokens = max_tokens
+# Load Hugging Face model and tokenizer
+model_name = "meta-llama/Llama-2-7b-hf"  # Replace with your model
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.float16,
+    device_map="auto"
+)
+tokenizer.pad_token = tokenizer.eos_token
 
-    def __call__(self, prompt, **kwargs):
-        # Tokenize the input prompt
-        inputs = self.tokenizer(
-            prompt,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=self.max_tokens
-        ).to(self.model.device)
+# Simple function to generate response with Hugging Face model
+def generate_response(prompt, max_length=512, temperature=0.7):
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=max_length
+    ).to(model.device)
+    outputs = model.generate(
+        **inputs,
+        max_length=max_length,
+        num_return_sequences=1,
+        do_sample=True,
+        temperature=temperature,
+        top_p=0.9
+    )
+    return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        # Generate output
-        outputs = self.model.generate(
-            **inputs,
-            max_length=kwargs.get("max_length", self.max_tokens),
-            num_return_sequences=1,
-            do_sample=kwargs.get("do_sample", True),
-            temperature=kwargs.get("temperature", 0.7),
-            top_p=kwargs.get("top_p", 0.9)
-        )
+# Configure DSPy with a basic LM wrapper
+def simple_lm(prompt, **kwargs):
+    response = generate_response(prompt, max_length=kwargs.get("max_length", 512))
+    return [dspy.Prediction(completion=response)]
 
-        # Decode the output
-        decoded = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
-        return [dspy.Prediction(completion=text) for text in decoded]
+dspy.settings.configure(lm=simple_lm)
 
-# Instantiate the custom LM
-hf_lm = HuggingFaceLM(model, tokenizer)
+# Define DSPy task
+qa_signature = dspy.Signature("question -> answer", "Answer the question concisely.")
+qa = dspy.Predict(qa_signature)
 
-# Configure DSPy to use this LM
-dspy.settings.configure(lm=hf_lm)
+# Test the setup
+result = qa(question="What is the capital of France?")
+print(result.answer)
