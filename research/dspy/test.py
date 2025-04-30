@@ -2,16 +2,17 @@ import dspy
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
-# Load GGUF model using a specific GGUF-supported loader
-# This will be specific to how Phi-4 GGUF is loaded
-from phi4_gguf_loader import load_gguf_model  # Assuming this is a custom loader (replace with actual GGUF support library)
+# Load Phi model (replace with your model if different)
+model_name = "microsoft/phi-2"  # Example; change to Phi-4 or your specific model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.float16,
+    device_map="auto"
+)
+tokenizer.pad_token = tokenizer.eos_token
 
-# Load Phi-4 GGUF model (you will need the appropriate loader for GGUF format)
-model_name = "phi4-gguf-model-path"  # Replace with your GGUF model's path
-tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-4")  # Tokenizer for Phi-4, may be adjusted
-model = load_gguf_model(model_name)  # Replace with the correct GGUF loader function
-
-# Define function for text generation using Phi-4 GGUF
+# Function to generate a response from the model (plain text)
 def generate_response(prompt, max_length=512, temperature=0.7):
     inputs = tokenizer(prompt, return_tensors="pt", padding=True).to(model.device)
     outputs = model.generate(
@@ -24,9 +25,9 @@ def generate_response(prompt, max_length=512, temperature=0.7):
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 # Custom DSPy-compatible language model wrapper
-class Phi4GGUFLM(dspy.LM):
+class MyHFLM(dspy.LM):
     def __init__(self):
-        super().__init__(model="phi-4-gguf")
+        super().__init__(model="phi-2")  # Just a label for internal use
 
     @property
     def lm_type(self):
@@ -36,21 +37,36 @@ class Phi4GGUFLM(dspy.LM):
         return generate_response(prompt, **kwargs)
 
 # Configure DSPy to use your custom language model
-dspy.settings.configure(lm=Phi4GGUFLM())
+dspy.settings.configure(lm=MyHFLM())
 
-# Define and run DSPy prediction task
+# Function to parse the raw model output into the expected structured format
+def parse_model_output(response_text):
+    # Example of manual parsing:
+    # The model generates: "The capital of France is Paris."
+    structured_response = {
+        "choices": [
+            {
+                "message": {
+                    "content": response_text.strip()  # Clean up response
+                }
+            }
+        ]
+    }
+    return structured_response
+
+# Define and run a DSPy prediction task
 qa_signature = dspy.Signature("question -> answer", "Answer the question concisely.")
 qa = dspy.Predict(qa_signature)
 
-# Run the task and manually parse the output
 try:
+    # Run a task and get the plain text response from the model
     result = qa(question="What is the capital of France?")
-    output_text = result  # Assuming result is the raw output string
-    # Parse output text manually (look for Answer or adjust based on response format)
-    if "Answer:" in output_text:
-        answer = output_text.split("Answer:")[1].strip()
-    else:
-        answer = output_text.strip()
+    
+    # Manually parse the output into the expected structure
+    structured_output = parse_model_output(result)
+    
+    # Extract the answer from the structured response
+    answer = structured_output["choices"][0]["message"]["content"]
     print("Answer:", answer)
 except Exception as e:
     print(f"Error running DSPy task: {e}")
