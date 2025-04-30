@@ -1,0 +1,28 @@
+{
+    "PERSON": [
+        {
+            "main": "Vladimir Putin",
+            "variations": [
+                "Putin"
+            ]
+        },
+        {
+            "main": "Joe Biden",
+            "variations": [
+                "Biden"
+            ]
+        },
+        {
+            "main": "John Smith",
+            "variations": [
+                "Smith"
+            ]
+        },
+        {
+            "main": "Hillary Clinton",
+            "variations": [
+                "Clinton"
+            ]
+        }
+    ]
+}

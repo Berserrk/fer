@@ -1,0 +1,89 @@
+{
+    "Germany": {
+        "continent": "Europe",
+        "activities": [
+            "Restaurant"
+        ]
+    },
+    "France": {
+        "continent": "Europe",
+        "activities": [
+            "Restaurant"
+        ]
+    },
+    "Italy": {
+        "continent": "Europe",
+        "activities": [
+            "Restaurant"
+        ]
+    },
+    "Spain": {
+        "continent": "Europe",
+        "activities": [
+            "Restaurant"
+        ]
+    },
+    "Portugal": {
+        "continent": "Europe",
+        "activities": [
+            "no label"
+        ]
+    },
+    "Netherlands": {
+        "continent": "Europe",
+        "activities": [
+            "Restaurant"
+        ]
+    },
+    "Belgium": {
+        "continent": "Europe",
+        "activities": [
+            "Restaurant",
+            "Plane",
+            "Gym"
+        ]
+    },
+    "Switzerland": {
+        "continent": "Europe",
+        "activities": [
+            "Restaurant",
+            "sport"
+        ]
+    },
+    "Brazil": {
+        "continent": "South America",
+        "activities": [
+            "Restaurant",
+            "Sao Paulo"
+        ]
+    },
+    "Argentina": {
+        "continent": "South America",
+        "activities": [
+            "Restaurant",
+            "sport",
+            "Cinema"
+        ]
+    },
+    "Colombia": {
+        "continent": "South America",
+        "activities": [
+            "Restaurant",
+            "sport"
+        ]
+    },
+    "Chile": {
+        "continent": "South America",
+        "activities": [
+            "Restaurant",
+            "sport"
+        ]
+    },
+    "Peru": {
+        "continent": "South America",
+        "activities": [
+            "Restaurant",
+            "sport"
+        ]
+    }
+}
