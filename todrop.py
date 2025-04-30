@@ -3,16 +3,16 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 # Load Hugging Face model and tokenizer
-model_name = "distilgpt2"
+model_name = "distilgpt2"  # You can replace this with any other model
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     torch_dtype=torch.float16,
     device_map="auto"
 )
-tokenizer.pad_token = tokenizer.eos_token
+tokenizer.pad_token = tokenizer.eos_token  # Avoids padding errors
 
-# Function to generate response
+# Function to generate response using the Hugging Face model
 def generate_response(prompt, max_length=512, temperature=0.7):
     try:
         inputs = tokenizer(
@@ -35,8 +35,11 @@ def generate_response(prompt, max_length=512, temperature=0.7):
         print(f"Error in generation: {e}")
         return ""
 
-# Create a DSPy-compatible LM wrapper
+# DSPy-compatible wrapper class for the language model
 class MyHFLM(dspy.LM):
+    def __init__(self):
+        super().__init__(model="distilgpt2")  # Identifier for logging/debugging
+
     def __call__(self, prompt, **kwargs):
         response = generate_response(
             prompt,
@@ -45,14 +48,14 @@ class MyHFLM(dspy.LM):
         )
         return dspy.Prediction(completion=response)
 
-# Configure DSPy
+# Configure DSPy to use your Hugging Face LM
 dspy.settings.configure(lm=MyHFLM())
 
-# Define and test DSPy task
+# Define a DSPy signature and task
 qa_signature = dspy.Signature("question -> answer", "Answer the question concisely.")
 qa = dspy.Predict(qa_signature)
 
-# Try generating an answer
+# Run a test question
 try:
     result = qa(question="What is the capital of France?")
     print("Answer:", result.answer)
