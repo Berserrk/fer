@@ -10,9 +10,9 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.float16,
     device_map="auto"
 )
-tokenizer.pad_token = tokenizer.eos_token
+tokenizer.pad_token = tokenizer.eos_token  # Required for some decoding methods
 
-# Function to generate text using HF model
+# Function to generate a response from the model
 def generate_response(prompt, max_length=512, temperature=0.7):
     try:
         inputs = tokenizer(
@@ -22,6 +22,7 @@ def generate_response(prompt, max_length=512, temperature=0.7):
             truncation=True,
             max_length=max_length
         ).to(model.device)
+
         outputs = model.generate(
             **inputs,
             max_length=max_length,
@@ -30,15 +31,20 @@ def generate_response(prompt, max_length=512, temperature=0.7):
             temperature=temperature,
             top_p=0.9
         )
+
         return tokenizer.decode(outputs[0], skip_special_tokens=True)
     except Exception as e:
         print(f"Error in generation: {e}")
         return ""
 
-# DSPy-compatible wrapper
+# Custom DSPy-compatible language model wrapper
 class MyHFLM(dspy.LM):
     def __init__(self):
-        super().__init__(model="distilgpt2")
+        super().__init__(model="distilgpt2")  # Just a label for internal use
+
+    @property
+    def lm_type(self):
+        return "completion"  # Tells DSPy this is a plain text completion model
 
     def forward(self, prompt: str, **kwargs):
         response = generate_response(
@@ -46,16 +52,15 @@ class MyHFLM(dspy.LM):
             max_length=kwargs.get("max_length", 512),
             temperature=kwargs.get("temperature", 0.7)
         )
-        return dspy.Prediction(completion=response)
+        return response
 
-# Set DSPy to use the custom LM
+# Configure DSPy to use your custom language model
 dspy.settings.configure(lm=MyHFLM())
 
-# Define a DSPy task
+# Define and run a DSPy prediction task
 qa_signature = dspy.Signature("question -> answer", "Answer the question concisely.")
 qa = dspy.Predict(qa_signature)
 
-# Run a test query
 try:
     result = qa(question="What is the capital of France?")
     print("Answer:", result.answer)
