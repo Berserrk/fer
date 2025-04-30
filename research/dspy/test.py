@@ -1,20 +1,17 @@
-
-###
 import dspy
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
-# Load Hugging Face model and tokenizer
-model_name = "microsoft/phi-2"  # Replace with your specific model
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
-    torch_dtype=torch.float16,
-    device_map="auto"
-)
-tokenizer.pad_token = tokenizer.eos_token
+# Load GGUF model using a specific GGUF-supported loader
+# This will be specific to how Phi-4 GGUF is loaded
+from phi4_gguf_loader import load_gguf_model  # Assuming this is a custom loader (replace with actual GGUF support library)
 
-# Function to generate response
+# Load Phi-4 GGUF model (you will need the appropriate loader for GGUF format)
+model_name = "phi4-gguf-model-path"  # Replace with your GGUF model's path
+tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-4")  # Tokenizer for Phi-4, may be adjusted
+model = load_gguf_model(model_name)  # Replace with the correct GGUF loader function
+
+# Define function for text generation using Phi-4 GGUF
 def generate_response(prompt, max_length=512, temperature=0.7):
     inputs = tokenizer(prompt, return_tensors="pt", padding=True).to(model.device)
     outputs = model.generate(
@@ -27,9 +24,9 @@ def generate_response(prompt, max_length=512, temperature=0.7):
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 # Custom DSPy-compatible language model wrapper
-class MyHFLM(dspy.LM):
+class Phi4GGUFLM(dspy.LM):
     def __init__(self):
-        super().__init__(model="phi-2")  # Just a label for internal use
+        super().__init__(model="phi-4-gguf")
 
     @property
     def lm_type(self):
@@ -39,16 +36,17 @@ class MyHFLM(dspy.LM):
         return generate_response(prompt, **kwargs)
 
 # Configure DSPy to use your custom language model
-dspy.settings.configure(lm=MyHFLM())
+dspy.settings.configure(lm=Phi4GGUFLM())
 
-# Define and run a DSPy prediction task
+# Define and run DSPy prediction task
 qa_signature = dspy.Signature("question -> answer", "Answer the question concisely.")
 qa = dspy.Predict(qa_signature)
 
+# Run the task and manually parse the output
 try:
     result = qa(question="What is the capital of France?")
-    # Manually parse the output
-    output_text = result  # Assuming result is a string
+    output_text = result  # Assuming result is the raw output string
+    # Parse output text manually (look for Answer or adjust based on response format)
     if "Answer:" in output_text:
         answer = output_text.split("Answer:")[1].strip()
     else:
@@ -56,46 +54,3 @@ try:
     print("Answer:", answer)
 except Exception as e:
     print(f"Error running DSPy task: {e}")
-
-
-
-
-
-
-
-
-    ####
-import dspy
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-
-class HuggingFaceLM(dspy.LM):
-    def __init__(self, model_name, hf_token=None, **kwargs):
-        super().__init__(model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, token=hf_token)
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, token=hf_token, device_map="auto")
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.kwargs = kwargs  # Store kwargs for generation parameters like temperature, max_tokens
-
-    def __call__(self, prompt, **call_kwargs):
-        # Combine default kwargs with call-specific kwargs
-        generation_kwargs = {**self.kwargs, **call_kwargs}
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-        outputs = self.model.generate(**inputs, **generation_kwargs)
-        response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return [dspy.Prediction(completion=response)]
-
-# Usage
-model_name = "meta-llama/Llama-2-7b-hf"
-hf_token = "your_huggingface_token"  # Replace with your actual token
-hf_lm = HuggingFaceLM(model_name, hf_token=hf_token, temperature=0.7, max_tokens=512)
-dspy.settings.configure(lm=hf_lm)
-
-# Define DSPy task
-qa_signature = dspy.Signature("question -> answer", "Answer the question concisely.")
-qa = dspy.Predict(qa_signature)
-
-# Test the setup
-result = qa(question="What is the capital of France?")
-print("Answer:", result.answer)
