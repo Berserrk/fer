@@ -23,7 +23,6 @@ def generate_response(prompt, max_length=512, temperature=0.7):
         top_p=0.9
     )
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    print(f"Raw model response: {response}")  # Print the raw response for debugging
     return response
 
 # Custom DSPy-compatible language model wrapper
@@ -43,7 +42,7 @@ dspy.settings.configure(lm=MyHFLM())
 
 # Function to parse the raw model output into the expected structured format
 def parse_model_output(response_text):
-    print(f"Response before parsing: {response_text}")  # Print raw text before parsing
+    # Manually create the structure DSPy expects:
     structured_response = {
         "choices": [
             {
@@ -53,7 +52,6 @@ def parse_model_output(response_text):
             }
         ]
     }
-    print(f"Structured response: {structured_response}")  # Print structured response for inspection
     return structured_response
 
 # Define and run a DSPy prediction task
@@ -62,16 +60,15 @@ qa = dspy.Predict(qa_signature)
 
 try:
     # Run a task and get the plain text response from the model
-    print("\nRunning DSPy Prediction...")
     result = qa(question="What is the capital of France?")
-    print(f"Result from DSPy: {result}")  # Print the result returned by DSPy
+    print(f"Raw result from DSPy: {result}")  # Debug the result from DSPy
 
     # Manually parse the output into the expected structure
     structured_output = parse_model_output(result)
-    
+
     # Extract the answer from the structured response
     answer = structured_output["choices"][0]["message"]["content"]
     print(f"Answer: {answer}")
-    
+
 except Exception as e:
     print(f"Error running DSPy task: {e}")
