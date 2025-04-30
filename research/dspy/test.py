@@ -40,58 +40,35 @@ class MyHFLM(dspy.LM):
     def lm_type(self):
         return "completion"
 
-    # Override __call__ to intercept and process any unwanted keyword arguments (like "messages")
+    def forward(self, prompt: str, **kwargs):
+        # We are now directly calling our plain text generation function
+        return generate_response(prompt, **kwargs)
+
+    # Override __call__ to handle DSPy's input structure
     def __call__(self, *args, **kwargs):
         if 'messages' in kwargs:
             messages = kwargs.pop('messages')
-            # If messages is a list, join their "content" or string forms
             if isinstance(messages, list):
-                prompt_parts = []
-                for msg in messages:
-                    if isinstance(msg, dict) and "content" in msg:
-                        prompt_parts.append(msg["content"])
-                    else:
-                        prompt_parts.append(str(msg))
-                new_prompt = "\n".join(prompt_parts)
+                prompt_parts = [msg['content'] for msg in messages if isinstance(msg, dict) and 'content' in msg]
+                prompt = "\n".join(prompt_parts)
             else:
-                new_prompt = str(messages)
-            # Replace the first positional argument (the prompt) with our constructed prompt
-            if args:
-                args = (new_prompt,) + args[1:]
-            else:
-                args = (new_prompt,)
-        # Now call forward without the extra "messages" key in kwargs
-        return self.forward(*args, **kwargs)
-
-    def forward(self, prompt: str, **kwargs):
-        return generate_response(prompt, **kwargs)
+                prompt = str(messages)
+            return self.forward(prompt, **kwargs)
+        elif args:
+            return self.forward(args[0], **kwargs)
+        else:
+            raise ValueError("No prompt provided.")
 
 # Configure DSPy to use your custom language model
 dspy.settings.configure(lm=MyHFLM())
-
-# Function to parse the plain text response into DSPy's expected structured format
-def parse_model_output(response_text):
-    structured_response = {
-        "choices": [
-            {
-                "message": {
-                    "content": response_text.strip()
-                }
-            }
-        ]
-    }
-    return structured_response
 
 # Define and run a DSPy prediction task
 qa_signature = dspy.Signature("question -> answer", "Answer the question concisely.")
 qa = dspy.Predict(qa_signature)
 
 try:
-    # Run a DSPy prediction task; DSPy may send a "messages" argument internally.
+    # Run a DSPy prediction task
     result = qa(question="What is the capital of France?")
-    # Manually wrap the raw result into the structure DSPy expects.
-    structured_output = parse_model_output(result)
-    answer = structured_output["choices"][0]["message"]["content"]
-    print("Answer:", answer)
+    print("Answer:", result.answer)
 except Exception as e:
     print("Error running DSPy task:", e)
