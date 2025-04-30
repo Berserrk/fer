@@ -1,13 +1,10 @@
-import json
+import torch
 import dspy
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
 
-# ——— 1) Device + model loading ———
+# 1) Device + model loading
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_name = "/domino/datasets/local/ArticleDetective_PreProd/models/mistral-7B-instruct"
-# model_name = "/domino/datasets/local/ArticleDetective_PreProd/models/phi4"
-
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
     load_in_4bit=True,
@@ -15,24 +12,18 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
-model.to(device)
-
-# ——— 2) Ensure a pad_token exists ———
+# ensure pad token
 if tokenizer.pad_token is None:
-    # Use the eos token as padding
     tokenizer.pad_token = tokenizer.eos_token
     model.config.pad_token_id = tokenizer.eos_token_id
+model.to(device)
 
-# ——— 3) Plain-text generation helper ———
-def generate_response(
-    prompt: str,
-    max_length: int = 200,
-    temperature: float = 0.7
-) -> str:
+# 2) Plain-text generator
+def generate_response(prompt: str, max_length=200, temperature=0.7) -> str:
     inputs = tokenizer(
         prompt,
         return_tensors="pt",
-        padding=True,           # now safe, because pad_token is defined
+        padding=True,
         truncation=True,
         max_length=max_length
     ).to(device)
@@ -44,9 +35,12 @@ def generate_response(
             temperature=temperature,
             top_p=0.9
         )
+    # guard against empty outputs
+    if outputs.numel() == 0:
+        return ""
     return tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
 
-# ——— 4) DSPy LM wrapper that returns a dict with "text" ———
+# 3) DSPy LM wrapper returning a Prediction(text=...)
 class MyHFLM(dspy.LM):
     def __init__(self):
         super().__init__(model=model_name)
@@ -56,34 +50,39 @@ class MyHFLM(dspy.LM):
         return "completion"
 
     def __call__(self, *args, **kwargs):
-        # DSPy might pass `question=` or `messages=`; grab whichever it gives
+        # extract prompt from DSPy call signature
         if "question" in kwargs:
-            prompt = kwargs.pop("question")
+            prompt = kwargs["question"]
         elif args:
             prompt = args[0]
+        elif "messages" in kwargs:
+            msgs = kwargs["messages"]
+            if isinstance(msgs, list):
+                prompt = "\n".join(m.get("content", str(m)) if isinstance(m, dict) else str(m) for m in msgs)
+            else:
+                prompt = str(msgs)
         else:
             prompt = ""
 
-        # Generate the text
         text = generate_response(
             prompt,
             max_length=kwargs.get("max_length", 200),
             temperature=kwargs.get("temperature", 0.7)
         )
 
-        # Return a plain dict — DSPy’s JSON fallback will pick up `text`
-        return {"text": text}
+        # return a Prediction object with a 'text' field
+        return dspy.Prediction(text=text)
 
-# ——— 5) Tell DSPy to use your custom LM ———
+# 4) Hook it up
 dspy.settings.configure(lm=MyHFLM())
 
-# ——— 6) Signature & Predict ———
+# 5) Use a signature that maps question->text
 qa_sig = dspy.Signature("question -> text", "Answer the question concisely.")
 qa = dspy.Predict(qa_sig)
 
-# ——— 7) Run it ———
+# 6) Run and print
 try:
-    out = qa(question="What is the capital of Japan? Provide a concise answer.")
+    out = qa(question="What is the capital of France?")
     print("Answer:", out.text)
 except Exception as e:
     print("Error:", e)
