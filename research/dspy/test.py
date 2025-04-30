@@ -35,6 +35,7 @@ class MyHFLM(dspy.LM):
         return "completion"
 
     def forward(self, prompt: str, **kwargs):
+        # We use 'prompt' instead of 'messages'
         return generate_response(prompt, **kwargs)
 
 # Configure DSPy to use your custom language model
