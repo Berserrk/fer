@@ -1,33 +1,38 @@
 import dspy
-from transformers import AutoTokenizer
-from dspy import HFLocalModel
 
-# Your local Phi-4 model path
-model_path = "./phi4"
+class HuggingFaceLM(dspy.LM):
+    def __init__(self, model, tokenizer, max_tokens=512):
+        super().__init__(model_name=model.config._name_or_path)
+        self.model = model
+        self.tokenizer = tokenizer
+        self.max_tokens = max_tokens
 
-# Initialize tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_path)
+    def __call__(self, prompt, **kwargs):
+        # Tokenize the input prompt
+        inputs = self.tokenizer(
+            prompt,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=self.max_tokens
+        ).to(self.model.device)
 
-# Setup DSPy local model wrapper
-local_lm = HFLocalModel(
-    model=model_path,
-    tokenizer=model_path,
-    model_kwargs={
-        "device_map": "auto",
-        "load_in_4bit": True  # Remove if your model is full precision
-    }
-)
+        # Generate output
+        outputs = self.model.generate(
+            **inputs,
+            max_length=kwargs.get("max_length", self.max_tokens),
+            num_return_sequences=1,
+            do_sample=kwargs.get("do_sample", True),
+            temperature=kwargs.get("temperature", 0.7),
+            top_p=kwargs.get("top_p", 0.9)
+        )
 
-# Set the local model as the default LM for DSPy
-dspy.settings.configure(lm=local_lm)
+        # Decode the output
+        decoded = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        return [dspy.Prediction(completion=text) for text in decoded]
 
-# Quick test program
-class Summarizer(dspy.Signature):
-    """A short summary of the input text."""
-    text = dspy.InputField()
-    summary = dspy.OutputField()
+# Instantiate the custom LM
+hf_lm = HuggingFaceLM(model, tokenizer)
 
-summarizer = dspy.Predict(Summarizer)
-result = summarizer(text="The theory of relativity states that space and time are relative...")
-
-print(result.summary)
+# Configure DSPy to use this LM
+dspy.settings.configure(lm=hf_lm)
