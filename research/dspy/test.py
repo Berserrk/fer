@@ -22,7 +22,9 @@ def generate_response(prompt, max_length=512, temperature=0.7):
         do_sample=True,
         top_p=0.9
     )
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    print("Raw model response:", response)  # Print the raw response here
+    return response
 
 # Custom DSPy-compatible language model wrapper
 class MyHFLM(dspy.LM):
@@ -41,8 +43,10 @@ dspy.settings.configure(lm=MyHFLM())
 
 # Function to parse the raw model output into the expected structured format
 def parse_model_output(response_text):
-    # Example of manual parsing:
-    # The model generates: "The capital of France is Paris."
+    # Print raw response before parsing
+    print("Response before parsing:", response_text)
+    
+    # Manually parse the output into a structured format
     structured_response = {
         "choices": [
             {
@@ -52,6 +56,10 @@ def parse_model_output(response_text):
             }
         ]
     }
+    
+    # Print structured response to debug the structure
+    print("Structured response:", structured_response)
+    
     return structured_response
 
 # Define and run a DSPy prediction task
