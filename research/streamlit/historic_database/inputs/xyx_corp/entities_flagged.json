@@ -1,0 +1,19 @@
+{
+    "entities": [
+        {
+            "name": "XYZ Corp.",
+            "type": "Company",
+            "crime": "Fraudulent activities, Financial mismanagement, Tax evasion"
+        },
+        {
+            "name": "John Doe",
+            "type": "Person",
+            "crime": "Embezzlement"
+        },
+        {
+            "name": "Jane Smith",
+            "type": "Person",
+            "crime": "Hiding financial records, Tax evasion"
+        }
+    ]
+}

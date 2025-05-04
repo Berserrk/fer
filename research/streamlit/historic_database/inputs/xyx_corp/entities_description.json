@@ -1,0 +1,16 @@
+{
+    "entities": [
+        {
+            "name": "XYZ Corp.",
+            "description": "XYZ Corp. is a multinational corporation involved in various business sectors, including technology, finance, and consulting. It has been recently investigated for fraudulent activities."
+        },
+        {
+            "name": "John Doe",
+            "description": "John Doe is the CEO of XYZ Corp., facing charges of embezzling company funds. He has been in the spotlight for his alleged involvement in financial misconduct."
+        },
+        {
+            "name": "Jane Smith",
+            "description": "Jane Smith is the CFO of XYZ Corp., accused of hiding financial records to avoid paying taxes. Her role in the company has made her a central figure in the ongoing investigation."
+        }
+    ]
+}
