@@ -1,0 +1,12 @@
+{
+    "entities": [
+        {
+            "name": "Sarah Parker",
+            "description": "Sarah Parker is an insurance agent who has been arrested for manipulating policy claims to gain personal benefits. Her involvement in the insurance industry made her a trusted figure before the scandal was uncovered."
+        },
+        {
+            "name": "Michael Johnson",
+            "description": "Michael Johnson, a client of Sarah Parker, was arrested for collaborating in submitting fraudulent medical reports in order to claim insurance reimbursement. His role in the fraud scheme has shocked many in the industry."
+        }
+    ]
+}

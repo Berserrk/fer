@@ -1,0 +1,14 @@
+{
+    "entities": [
+        {
+            "name": "Sarah Parker",
+            "type": "Person",
+            "crime": "Insurance fraud, Manipulating policy claims"
+        },
+        {
+            "name": "Michael Johnson",
+            "type": "Person",
+            "crime": "Submitting false medical reports, Insurance fraud"
+        }
+    ]
+}
