@@ -244,3 +244,67 @@ Click the “+ Add Entity” button above the dashboard to open the input form.
 ⸻
 
 ⸻
+Article Detective’s backend is orchestrated by a Streamlit application that sequentially triggers a suite of Python scripts. Each script performs a distinct analytical step, feeding its output into the next, to transform raw documents into a rich graph of flagged entities.
+
+
+
+
+
+
+⸻
+
+1. Document Analysis & Entity Expansion
+	•	Purpose: Parse the uploaded .docx (and soon .pdf) to extract raw text segments.
+	•	Process:
+	•	Use NLP tokenization to split text into logical “chunks.”
+	•	Generate candidate entity strings via custom heuristics.
+	•	Glider module performs entity expansion—growing each seed string into variant forms (e.g., abbreviations, acronyms).
+
+⸻
+
+2. Entity Resolution
+	•	Purpose: Consolidate multiple mentions of the same real-world entity.
+	•	Process:
+	•	Compute Jaccard similarity on token sets and cosine similarity on embedding vectors.
+	•	Group strings into clusters when similarity exceeds configurable thresholds.
+	•	Assign a canonical name to each cluster for downstream processing.
+
+⸻
+
+3. Entity Exclusion
+	•	Purpose: Remove non-informative or overly generic terms that could muddy analysis.
+	•	Process:
+	•	Filter out terms matching a curated stop-list (e.g., “manager,” “director,” “team lead”).
+	•	Drop entities with high document-frequency across all uploads (heuristic for generic roles).
+
+⸻
+
+4. Entity Categorization
+	•	Purpose: Classify each resolved entity by the type of criminal activity it may be associated with.
+	•	Process:
+	•	Send entity descriptions to the LLM, along with a predefined list of crime categories supplied by the business.
+	•	The model returns one or more flags (e.g., “Money Laundering,” “Embezzlement”).
+	•	Store both the category and a confidence score for later filtering.
+
+⸻
+
+5. Relationship Building
+	•	Purpose: Discover direct links between flagged entities based on co-occurrence and contextual cues.
+	•	Process:
+	•	Analyze proximity within text (same paragraph/sentence).
+	•	Apply rule-based pattern matching (e.g., “X is a subsidiary of Y”).
+	•	Generate a set of (Entity A) — [Relationship Type] —> (Entity B) triples.
+
+⸻
+
+6. Second-Degree Flagging
+	•	Purpose: Identify entities indirectly connected to criminal actors (“friends of flagged”).
+	•	Process:
+	•	For each flagged entity, query the LLM for known associates or partners that may also warrant attention.
+	•	Validate suggestions against the historical entity database to avoid spurious flags.
+	•	Mark these as second-degree in the graph view.
+
+⸻
+
+🔄 Continuous Feedback Loop:
+All user edits in the Flagging Dashboard feed back into retraining both the LLM prompts and rule-based thresholds, refining every step of this pipeline over time.
