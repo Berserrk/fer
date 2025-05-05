@@ -248,7 +248,11 @@ Article Detective’s backend is orchestrated by a Streamlit application that se
 
 
 
-
+    B --> C[Entity Resolution]
+    C --> D[Entity Exclusion]
+    D --> E[Entity Categorization]
+    E --> F[Relationship Building]
+    F --> G[Second-Degree Flagging]
 
 
 ⸻
