@@ -8,8 +8,14 @@ Absolutely! Below is an expanded Confluence-style documentation for Article Dete
 
 📖 Purpose
 
-Article Detective is a document intelligence platform designed to extract, analyze, and flag criminal associations in investigative and journalistic content. It provides a structured, interactive environment for researchers, analysts, and compliance teams to uncover insights hidden in unstructured text.
+Article Detective was born out of a direct request from our Compliance Officers, who each year review hundreds of investigative and journalistic articles for potential risk exposure. Manually scanning such volumes is time-consuming, error-prone, and difficult to scale.
 
+Article Detective streamlines this workflow by automatically:
+	•	Extracting and standardizing names of people and organizations
+	•	Flagging those with possible criminal associations against our historical entity database
+	•	Visualizing connections and patterns across documents
+
+By providing analysts and compliance teams with instant, data-driven insights, Article Detective significantly reduces review time, boosts accuracy in identifying high-risk entities, and ensures no critical link goes unnoticed.
 ⸻
 
 🎯 Use Cases
@@ -39,13 +45,18 @@ graph TD
     Graph --> UI
     DB --> UI
 
-	•	Frontend: React + Tailwind, fully interactive
-	•	Backend: FastAPI + Celery
-	•	NLP Engine: GPT-4 and spaCy for hybrid processing
-	•	Storage: AWS S3 for uploaded files
-	•	Data Persistence: PostgreSQL for structured data, Redis for caching
-	•	Visualization: D3.js-powered graph explorer
+	RiskLab Platform
+	•	A proprietary bank-internal wrapper around Azure
+	•	Manages clusters (workspaces) that allocate compute and storage resources
+	•	Persists uploaded files and intermediate data in Azure Blob Storage
+	•	(Resource consumption details are documented on the RiskLab Resource Usage page)
+	•	Article Detective App
+	•	Streamlit front end for user interaction and dashboarding
+	•	Python processing scripts triggered from the UI for NLP pipelines
+	•	Embedded HTML tables in Streamlit for the Activities Dashboard
+	•	Data-Base Engine/ Object relational mapping layer for all database reads/writes to a central SQL database
 
+This separation ensures that Article Detective can focus on analysis and visualization, while RiskLab provides a scalable, secure Azure-backed infrastructure.
 ⸻
 
 🧩 Feature Set (Detailed)
@@ -62,17 +73,23 @@ graph TD
 
 📄 Article Summarization (Layered)
 
-Per Article
-	•	One-paragraph TL;DR
-	•	Named entities highlighted in summary
+📰 Article Summarization
 
-Cross-Document
-	•	Multi-article summary highlighting:
-	•	Overlapping individuals or orgs
-	•	Similar criminal patterns
-	•	High-signal keywords (e.g., “embezzlement,” “offshore,” etc.)
+Each time you upload documents, Article Detective generates concise, actionable summaries:
+	•	Single Document Upload
+When you upload one article, the system returns a one-paragraph summary of that document.
+	•	Multiple Document Uploads
+When you upload multiple articles, the system will:
+	1.	Produce a one-paragraph summary for each article (so each document gets its own standalone paragraph).
+	2.	Automatically generate a composite summary at the end, which synthesizes the individual summaries and highlights:
+	•	Shared entities across articles
+	•	Recurring themes or patterns
+	•	Important connections and red flags that emerge only when viewing the articles as a group
 
-📌 Useful for thematic investigations or connecting seemingly unrelated pieces.
+⚡ Example Workflow
+	1.	Upload report1.docx, investigation2.docx, and profile3.docx.
+	2.	Receive three separate paragraphs—one per file—detailing each article’s key points.
+	3.	Read the final “Group Overview” paragraph, which draws links between those articles (e.g., “All three pieces reference Company X’s offshore transactions and highlight individual Y’s repeated involvement…”).
 
 ⸻
 
@@ -80,40 +97,87 @@ Cross-Document
 
 A feature-rich interface to review system-detected entities.
 
-📋 Table Columns
+The Entity Flagging Dashboard is a central, interactive HTML table that displays all entities identified and flagged by the LLM and our custom algorithms. It empowers analysts to review, correct, and enrich entity data in real time, creating a continuous feedback loop that improves model accuracy.
 
-Column	Description
-Entity Name	Standardized, resolved name
-Description	Textual overview or role
-Flag Status	✅ or ❌ based on criteria
-Associated Crimes	Crimes mapped (clickable tags)
-Confidence Score	[Low / Medium / High]
-Comments	Analyst notes (editable)
+Feature
+Description
+Real-time Editing
+Inline edits save immediately to the database—no page reload required.
+Add/Remove Entities
+• Add new entities not detected by the system• Remove false positives or obsolete entries
+Modify Crime Flags
+• Add or remove one or more crime tags per entity (e.g., toggle between CRIME A and CRIME B)• Support for multiple flags per row
+Update Any Column
+• Edit entity descriptions, comments, and confidence scores• Change categorization (first-degree vs. second-degree)
+Filtering & Sorting
+• Filter by crime type, flag status, or confidence level• Sort alphabetically, by frequency, or by date first flagged
+Bulk Actions
+• Select multiple rows to apply the same update (e.g., flag all selected entities for a new crime)
 
-🔧 Table Actions
-	•	Inline editing
-	•	Filter by crime or category
-	•	Export to .csv or JSON
-	•	Sort by confidence or frequency
+👤 User Interaction Flow
+	1.	Review Flags
+Entities automatically flagged by the LLM appear in the table with their detected crimes and summary.
+	2.	Correct & Enrich
+	•	Click on a cell to edit text (description, comments).
+	•	Use the crime-tag dropdown to add/remove flags.
+	•	Click the “+” icon to insert a completely new entity row.
+	•	Use the trash icon to delete an incorrect entity.
+	3.	Save & Sync
+All changes persist instantly to the central SQL database via our DbE ORM layer.
+	4.	Feedback Loop
+Each user modification (new entity, changed flag, edited description) is logged and fed back into the training pipeline to refine both the LLM prompts and the rule-based components.
 
-🧠 Edits made by analysts are written back to the database for future learning.
-
+Tip:
+Use the filter bar at the top of the table to narrow down entities by specific crimes or confidence levels before applying bulk updates.
 ⸻
 
 🌐 Entity Graph View
 
-Interactive graph that illustrates how entities relate to one another across the corpus.
+The Entity Relationships Graph provides a visual network focused on flagged entities and their direct and indirect connections—helping analysts uncover hidden links and patterns across articles.
 
-Graph Details:
-	•	Color-coded nodes: Red (flagged), Yellow (watchlist), Green (clean)
-	•	Hover-to-inspect tooltips
-	•	Legend panel with relationship types
-	•	Mini-map for navigating large graphs
+eature
+Description
+Flagged-Centric View
+Automatically highlights entities flagged by the LLM in red, then dynamically loads their first- and second-degree neighbors in orange and yellow, respectively.
+Relationship Types
+Edge labels display one of our predefined categories (e.g., owner, investor, partner, shareholder, representative, beneficiary, other).
+Dynamic Expansion
+Click on any node to expand its neighbors on the fly, revealing connections not explicitly mentioned in the article corpus.
+Interactive Controls
+• Zoom & Pan: Mouse or touch gestures for seamless navigation• Full-Screen Mode: Focus on complex networks without UI distractions
+Detail-On-Demand
+Selecting a node opens a side-panel with:
 
-Roadmap:
-	•	Timeline slider for historical event mapping
-	•	Animation mode to visualize relationship evolution over time
 
+	•	Entity summary and description
+	•	List of associated crimes and flags
+	•	Links to all source articles where the entity appears                                                               |
+| Filtering & Highlighting    | • Filter by relationship type or confidence score• Highlight Paths between two selected entities to trace potential indirect links  
+
+
+👤 User Interaction Flow
+	1.	Initial Load
+	•	Graph centers on all flagged entities from the current analysis.
+	2.	Explore Connections
+	•	Click a flagged node to expand its network neighbors.
+	•	Use filters to show only specific relationship types (e.g., “investor” links).
+	3.	Investigate Details
+	•	Hover over edges to see brief relationship summaries.
+	•	Select nodes to view full entity dossiers in the side-panel.
+	4.	Visual Insights
+	•	Identify clusters of high-risk actors or unexpected intermediary entities.
+	•	Export the graph view as PNG or GraphML for reporting or further analysis.
+
+⚡ Developer & Model-Training Benefits
+	•	Hidden Link Detection: Surface non-obvious connections that can guide deeper investigative queries.
+	•	Feedback Loop: Analysts can flag spurious or missing links right from the graph, feeding corrections back into the relationship-extraction algorithms.
+	•	Auditability: All expansions and interactions are logged, ensuring reproducible analyses and compliance traceability.
+
+
+🔜 Upcoming Enhancements
+	•	Historical Timeline Slider: Animate network growth over time to see how relationships evolve.
+	•	Custom Relationship Schemas: Allow business users to define new link types (e.g., “advisor,” “affiliate”).
+	•	Confidence-Based Edge Styling: Thicker lines or opacity levels to denote relationship confidence scores.
 ⸻
 
 🧾 Entity Summary Browser
@@ -132,92 +196,51 @@ For Each Entity:
 
 ✍️ Manual Entity Input
 
-Add and manage your own intelligence.
-
-Fields:
-	•	Name (required)
-	•	Known Aliases
-	•	Crimes (multi-select)
-	•	Analyst Notes
-	•	Priority Level
-
-Stored In:
-	•	Entity DB with special user_submitted flag
-	•	Fully integrated into future LLM analyses
-
-🧠 Manually added entities are surfaced if detected in subsequent uploads.
-
-⸻
-
-📊 Reporting & Exports
-
-Available Exports:
-	•	CSV summary of all flagged entities
-	•	JSON schema of article-level metadata
-	•	PDF printouts of summaries
-	•	Network graph export as PNG or GraphML
-
-Coming Soon:
-	•	Custom report builder
-	•	Daily/weekly digests
-	•	Jira integration for entity-to-ticket creation
-
-⸻
-
-🔐 Data Handling & Privacy
-
-Policy	Implementation
-Storage	Encrypted with AES-256
-Access	Role-based (Admin, Analyst, Viewer)
-Deletion	Articles and entities deletable by request or after TTL expiry
-Logging	Full audit trail for user actions
-Compliance	GDPR-ready, optional audit exports available
+The Manual Entity Input feature empowers users to directly contribute to and refine the Entity Flagging Dashboard by adding, editing, or removing entities on the fly. All inputs not only update the live table but also generate valuable feedback for model and ruleset improvements.
 
 
+Capability
+Description
+Add New Entity
+Enter a new entity’s Name, select one or more Crime Flags, and provide a Description.
+Edit Existing Entity
+Update any field (Name, Crime Flags, Description, Comments) inline within the table.
+Remove Entity
+Delete false positives or obsolete entries with a single click.
+Instant Sync
+All changes immediately propagate to the central SQL database and refresh the Entity Flagging Dashboard.
+Feedback Capture
+Each manual action (add/edit/delete) is logged and sent to the development team as labelled training data to enhance future LLM accuracy.
+
+
+👤 User Interaction Flow
+	1.	Open Manual Input Panel
+Click the “+ Add Entity” button above the dashboard to open the input form.
+	2.	Provide Entity Details
+	•	Name: Full entity name (e.g., “Acme Offshore Ltd.”).
+	•	Crime Flags: Select from dropdown (e.g., “Fraud,” “Money Laundering”). Multiple selections allowed.
+	•	Description: Brief context or rationale for flagging.
+	•	Comments (optional): Analyst notes or sources.
+	3.	Submit & View
+	•	On submission, the new row appears instantly in the Entity Flagging Dashboard.
+	•	The table remains fully editable for any further tweaks.
+	4.	Delete or Edit
+	•	Use the inline edit controls or trash icon to modify or remove the entry.
 
 ⸻
 
-🛠 User Roles & Permissions
-
-Role	Capabilities
-Admin	Full access, system settings, audit tools
-Analyst	Upload, edit, flag, comment
-Viewer	Read-only access, can view all entities and summaries
-
-👥 Roles can be synced with your internal identity provider (e.g., Okta, Azure AD)
+⚡ Developer & Model-Training Benefits
+	•	Human-Labelled Data: Analyst inputs serve as high-quality labels for supervised retraining of LLM prompts and rule-based components.
+	•	Error Correction: Rapid correction of false positives/negatives directly informs threshold adjustments and entity-resolution logic.
+	•	Audit Trail: All manual edits include timestamps and user IDs, ensuring clear traceability for compliance reviews.
 
 ⸻
 
-📆 Release Plan (2025)
-
-Feature	Status	ETA
-PDF Upload Support	🧪 Testing	April 2025
-Custom Crime Categories	🧩 Planned	Q2 2025
-API Access for Entities	🚧 In Progress	Q2 2025
-Timeline Visualizations	🔜 Planned	Q3 2025
-Multi-language Article Support	Researching	Q4 2025
-
-
+🔜 Upcoming Enhancements
+	•	Input Templates: Pre-defined templates for common entity types (e.g., “Shell Company,” “Politically Exposed Person”) to standardize entries.
+	•	Bulk Upload: CSV import for adding or updating multiple entities in one action.
+	•	In-Context Suggestions: Auto-complete suggestions for entity names and crime flags based on the existing database.
 
 ⸻
 
-🧭 Future Ideas
-	•	Slack notifications when high-risk entities are flagged
-	•	Browser extension for real-time flagging on news sites
-	•	LLM-powered query assistant (e.g., “Show all flagged investors in oil companies”)
-	•	Entity risk scoring based on co-occurrence with crime patterns
-
 ⸻
-
-📞 Support & Contacts
-
-Channel	Purpose
-📧 support@articledetective.io	General issues or feature requests
-🛠 Slack: #article-detective-users	Internal collaboration
-🧠 Product Team: product@articledetective.io	Roadmap discussions or demos
-
-
-
-⸻
-
-Would you like a downloadable .confluence format of this page or help breaking it into multiple linked pages (e.g., Features, Architecture, Governance)?
