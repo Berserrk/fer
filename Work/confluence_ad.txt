@@ -1,0 +1,223 @@
+Absolutely! Below is an expanded Confluence-style documentation for Article Detective, incorporating additional context, technical insights, user experience design details, and governance considerations—ideal for internal documentation used by product, engineering, and compliance teams on Confluence.
+
+⸻
+
+🕵️ Article Detective – Application Documentation
+
+⸻
+
+📖 Purpose
+
+Article Detective is a document intelligence platform designed to extract, analyze, and flag criminal associations in investigative and journalistic content. It provides a structured, interactive environment for researchers, analysts, and compliance teams to uncover insights hidden in unstructured text.
+
+⸻
+
+🎯 Use Cases
+	•	Investigative journalism support: Discover links between entities across multiple articles.
+	•	Compliance & due diligence: Pre-screen names against a historical entity and crime pattern database.
+	•	Internal investigations: Map internal or external actors linked to misconduct.
+	•	Document-driven intelligence gathering: Quickly surface and synthesize information from longform content.
+
+⸻
+
+🧱 Architecture Overview
+
+graph TD
+    UI[Frontend Interface]
+    API[REST API Layer]
+    Processor[Document Processing Pipeline]
+    LLM[LLM-Powered NLP Engine]
+    DB[PostgreSQL + Redis]
+    Storage[S3 Storage]
+    Graph[Graph Visualization Engine]
+    UI --> API
+    API --> Processor
+    Processor --> LLM
+    Processor --> DB
+    Processor --> Storage
+    Processor --> Graph
+    Graph --> UI
+    DB --> UI
+
+	•	Frontend: React + Tailwind, fully interactive
+	•	Backend: FastAPI + Celery
+	•	NLP Engine: GPT-4 and spaCy for hybrid processing
+	•	Storage: AWS S3 for uploaded files
+	•	Data Persistence: PostgreSQL for structured data, Redis for caching
+	•	Visualization: D3.js-powered graph explorer
+
+⸻
+
+🧩 Feature Set (Detailed)
+
+📥 Document Upload & Pipeline Execution
+	•	Multi-upload drag-and-drop interface
+	•	File validation (format, size, encoding)
+	•	Upload queue monitoring
+	•	Reprocessing check to avoid duplication
+
+🔐 All uploads are encrypted at rest and in transit.
+
+⸻
+
+📄 Article Summarization (Layered)
+
+Per Article
+	•	One-paragraph TL;DR
+	•	Named entities highlighted in summary
+
+Cross-Document
+	•	Multi-article summary highlighting:
+	•	Overlapping individuals or orgs
+	•	Similar criminal patterns
+	•	High-signal keywords (e.g., “embezzlement,” “offshore,” etc.)
+
+📌 Useful for thematic investigations or connecting seemingly unrelated pieces.
+
+⸻
+
+🧾 Entity Flagging Dashboard
+
+A feature-rich interface to review system-detected entities.
+
+📋 Table Columns
+
+Column	Description
+Entity Name	Standardized, resolved name
+Description	Textual overview or role
+Flag Status	✅ or ❌ based on criteria
+Associated Crimes	Crimes mapped (clickable tags)
+Confidence Score	[Low / Medium / High]
+Comments	Analyst notes (editable)
+
+🔧 Table Actions
+	•	Inline editing
+	•	Filter by crime or category
+	•	Export to .csv or JSON
+	•	Sort by confidence or frequency
+
+🧠 Edits made by analysts are written back to the database for future learning.
+
+⸻
+
+🌐 Entity Graph View
+
+Interactive graph that illustrates how entities relate to one another across the corpus.
+
+Graph Details:
+	•	Color-coded nodes: Red (flagged), Yellow (watchlist), Green (clean)
+	•	Hover-to-inspect tooltips
+	•	Legend panel with relationship types
+	•	Mini-map for navigating large graphs
+
+Roadmap:
+	•	Timeline slider for historical event mapping
+	•	Animation mode to visualize relationship evolution over time
+
+⸻
+
+🧾 Entity Summary Browser
+
+Entity-centric browsing panel.
+
+For Each Entity:
+	•	Full name and aliases
+	•	Mention count across articles
+	•	Related entities and shared articles
+	•	Associated crimes and confidence indicators
+
+📈 Helps analysts track repeat appearances across documents and builds entity dossiers.
+
+⸻
+
+✍️ Manual Entity Input
+
+Add and manage your own intelligence.
+
+Fields:
+	•	Name (required)
+	•	Known Aliases
+	•	Crimes (multi-select)
+	•	Analyst Notes
+	•	Priority Level
+
+Stored In:
+	•	Entity DB with special user_submitted flag
+	•	Fully integrated into future LLM analyses
+
+🧠 Manually added entities are surfaced if detected in subsequent uploads.
+
+⸻
+
+📊 Reporting & Exports
+
+Available Exports:
+	•	CSV summary of all flagged entities
+	•	JSON schema of article-level metadata
+	•	PDF printouts of summaries
+	•	Network graph export as PNG or GraphML
+
+Coming Soon:
+	•	Custom report builder
+	•	Daily/weekly digests
+	•	Jira integration for entity-to-ticket creation
+
+⸻
+
+🔐 Data Handling & Privacy
+
+Policy	Implementation
+Storage	Encrypted with AES-256
+Access	Role-based (Admin, Analyst, Viewer)
+Deletion	Articles and entities deletable by request or after TTL expiry
+Logging	Full audit trail for user actions
+Compliance	GDPR-ready, optional audit exports available
+
+
+
+⸻
+
+🛠 User Roles & Permissions
+
+Role	Capabilities
+Admin	Full access, system settings, audit tools
+Analyst	Upload, edit, flag, comment
+Viewer	Read-only access, can view all entities and summaries
+
+👥 Roles can be synced with your internal identity provider (e.g., Okta, Azure AD)
+
+⸻
+
+📆 Release Plan (2025)
+
+Feature	Status	ETA
+PDF Upload Support	🧪 Testing	April 2025
+Custom Crime Categories	🧩 Planned	Q2 2025
+API Access for Entities	🚧 In Progress	Q2 2025
+Timeline Visualizations	🔜 Planned	Q3 2025
+Multi-language Article Support	Researching	Q4 2025
+
+
+
+⸻
+
+🧭 Future Ideas
+	•	Slack notifications when high-risk entities are flagged
+	•	Browser extension for real-time flagging on news sites
+	•	LLM-powered query assistant (e.g., “Show all flagged investors in oil companies”)
+	•	Entity risk scoring based on co-occurrence with crime patterns
+
+⸻
+
+📞 Support & Contacts
+
+Channel	Purpose
+📧 support@articledetective.io	General issues or feature requests
+🛠 Slack: #article-detective-users	Internal collaboration
+🧠 Product Team: product@articledetective.io	Roadmap discussions or demos
+
+
+
+⸻
+
+Would you like a downloadable .confluence format of this page or help breaking it into multiple linked pages (e.g., Features, Architecture, Governance)?
