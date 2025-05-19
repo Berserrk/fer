@@ -1,1 +1,28 @@
-With over 8 years of experience across data engineering, data science, and technical leadership in sectors such as banking, media, and automotive, he brings strong cross-domain expertise with a clear focus on AI. Most recently, he led the development of an AI-powered application that processes documents to detect and flag criminal entities using advanced LLM and NLP techniques—delivering real impact in compliance and risk management. He has also actively supported colleagues in applying AI to their projects, demonstrating both technical depth and collaborative leadership. His previous contributions to a major tax platform at Credit Suisse further illustrate his ability to drive complex, high-value initiatives. In parallel, he has spent over four years lecturing on AI, machine learning, Python, and SQL at La Sorbonne University, reinforcing his role as both expert and educator.
+import hashlib
+import os
+from docx import Document
+import PyPDF2
+
+def extract_text_from_docx(file_path):
+    doc = Document(file_path)
+    return '\n'.join([para.text for para in doc.paragraphs])
+
+def extract_text_from_pdf(file_path):
+    text = ''
+    with open(file_path, 'rb') as f:
+        reader = PyPDF2.PdfReader(f)
+        for page in reader.pages:
+            text += page.extract_text() or ''
+    return text
+
+def generate_document_hash(file_path):
+    ext = os.path.splitext(file_path)[-1].lower()
+    
+    if ext == '.docx':
+        content = extract_text_from_docx(file_path)
+    elif ext == '.pdf':
+        content = extract_text_from_pdf(file_path)
+    else:
+        raise ValueError(f"Unsupported file type: {ext}")
+
+    return hashlib.sha256(content.encode('utf-8')).hexdigest()
