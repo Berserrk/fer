@@ -1,71 +1,33 @@
-import streamlit as st
-from docx import Document
-import duckdb
-import json
-import pandas as pd
+Here’s a clean and concise note version, stripped of titles and formatting for quick reference or sharing:
 
-# Function to read the DOCX file
-def read_docx(file):
-    doc = Document(file)
-    text = ""
-    for para in doc.paragraphs:
-        text += para.text + "\n"
-    return text
+⸻
 
-# Streamlit app
-def main():
-    st.title("DOCX File Reader")
+Designing a scalable data architecture on Azure and Databricks starts with proper layering. Ingest data from sources like CRMs, apps, APIs, and files using Azure Data Factory for batch or Event Hubs for streaming. Use Databricks Autoloader for file-based incremental loads.
 
-    # Upload DOCX file
-    uploaded_file = st.file_uploader("Choose a DOCX file", type="docx")
-    
-    if uploaded_file:
-        resultt = uploaded_file.name.replace(".docx", "")
-        
-        # Check if this article already exists in the database
-        with duckdb.connect('articles_metadata.duckdb') as conn:
-            result = conn.execute(
-                "SELECT strftime(date_uploaded, '%Y-%m-%d %H:%M:%S') FROM articles WHERE file_name = ?",
-                (uploaded_file.name,)
-            ).fetchone()
+Store everything in Azure Data Lake Storage Gen2 using a medallion architecture—Bronze for raw data, Silver for cleaned/enriched data, and Gold for business-ready aggregates.
 
-        if result:
-            upload_date = result[0]
-            st.warning(f"Article already exists in the database. Uploaded on {upload_date}")
+Process data with Azure Databricks using Spark notebooks. Apply business logic, schema enforcement, and use Delta Lake for versioning and updates.
 
-            # Create columns layout for the buttons
-            col1, col2 = st.columns(2)
+Model and analyze data using Databricks SQL or Power BI. Use the Lakehouse approach to unify analytics and AI.
 
-            with col1:
-                # "View Existing Analysis" button on the left
-                use_existing = st.button("View Existing Analysis")
-                if use_existing:
-                    # Read the existing analysis JSON and display the table
-                    with open("/Users/firaterman/Documents/fer/research/streamlit/historic_database/inputs/insurance_fraud/entities_flagged.json", 'r') as file:
-                        entities_data = json.load(file)
+For ML, manage experiments and models with MLflow; optionally use Azure ML. Use Silver/Gold data layers for training features.
 
-                    # Normalize the JSON data (flattening the 'entities' list)
-                    df_entities = pd.json_normalize(entities_data['entities'], sep='_')
+Ensure governance with Microsoft Purview for data lineage and cataloging. Secure access with RBAC, POSIX ACLs, and Unity Catalog.
 
-                    # Display the normalized table
-                    st.subheader("Entities Table")
-                    st.dataframe(df_entities)
+Orchestrate workflows with Data Factory or Databricks Workflows. Integrate Git for CI/CD and automate pipelines.
 
-            with col2:
-                # "Start New Submission" button on the right
-                submit_new = st.button("Start New Submission")
-                if submit_new:
-                    # Process the article as a new submission
-                    st.write("Processing the article as a new one...")
-                    # Add logic for handling new submission (save data, etc.)
-                    st.success("New article has been successfully submitted!")
+Key principles: ensure data quality with tools like Great Expectations, build modular pipelines, document lineage, and monitor using Azure Monitor and job alerts.
 
-        else:
-            # If the article does not exist, allow the user to submit it as new
-            if st.button("SSubmit as new document"):
-                st.write("Processing the article as a new one...")
-                # Add logic for saving the new article and analysis
-                st.success("New article has been successfully submitted!")
+⸻
 
-if __name__ == "__main__":
-    main()
+When meeting with teams using other architectures, ask:
+	•	What are your main data goals (e.g., reporting, ML)?
+	•	What platforms and tools do you use (cloud, storage, ETL)?
+	•	Is your setup batch, real-time, or both?
+	•	How do you manage ingestion, modeling, and transformations?
+	•	What BI tools are used? Is data self-service?
+	•	How do you handle ML workflows and deployment?
+	•	How is data access, governance, and compliance managed?
+	•	Can our systems align or integrate? Are there blockers we can address together?
+
+These questions help assess compatibility and define collaboration or integration paths.
