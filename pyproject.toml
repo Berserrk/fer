@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ner"
+version = "0.1.0"
+description = ""
+authors = ["berserk <erman.fi@gmail.com>"]
+include = ["fer"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.25.1"
+pytest = "^6.2.2"
+gliner = "<10.0.0"  # Add the appropriate version of gliner
+
+[tool.poetry.scripts]
+# Add any scripts here if needed
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

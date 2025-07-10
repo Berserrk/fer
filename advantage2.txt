@@ -1,0 +1,7 @@
+[=]>[escape]
+[caps]>[lwin]
+[scroll]>[vol-]
+[pause]>[vol+]
+[print]>[mute]
+[rctrl]>[lalt]
+[lalt]>[=]
