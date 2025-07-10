@@ -159,3 +159,7 @@ venv.bak/
 
 # mlflow local runs
 mlruns/*
+
+# ignore llm models
+genAI_LG/
+
