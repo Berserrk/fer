@@ -81,3 +81,25 @@ The dataset was cleaned and finalized to make it easy for modeling.
 When you train a model:
 	•	You only use the final single label ("postures": ["On Appeal"]).
 	•	You can rely on Kappa values to understand how reliable this label is, but you don’t see the raw votes.
+
+
+
+DEAL WITH NULL LABELS :
+- sol1: label as null
+- sol2: try to categorize them in a specific categories????
+
+
+
+Simple approaches:
+	•	Classic ML: TF-IDF features + Logistic Regression or SVM
+	•	Works surprisingly well on legal text if data is large
+
+Advanced approaches (recommended):
+	•	Transformer-based models (e.g., BERT, RoBERTa, LegalBERT)
+	•	Fine-tune a pre-trained model on your data
+
+
+
+
+
+	
