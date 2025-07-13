@@ -76,3 +76,53 @@ You have a text classification dataset with human-labeled documents. For high ac
 - Implement active learning to identify mislabeled examples
 
 What type of text are you classifying (emails, documents, social media, etc.) and how many categories/labels do you have? This will help me recommend the most suitable approach for your specific case.
+
+
+=====================
+=====================
+=====================
+- Strategy right now: 
+	- One of the challenge in MLC is the long-taill distribution: few labels occur frequently, whereas the majority of labels occurs
+very rarely in the data
+A long-tail distribution is a situation where:
+	•	A small number of labels are very common (these are the “head” of the distribution).
+	•	A large number of labels are rare and appear only a few times (these are in the “tail”).
+
+
+	•	Imbalanced data: The model might focus on frequent labels and ignore rare ones.
+	•	Poor performance on rare labels: Harder to learn accurate predictions for labels with few examples.
+	•	Evaluation difficulties: Metrics may look good overall (because common labels are predicted well), but performance on rare, important labels can be bad.
+A long-tail distribution in MLC means most labels are rare, and only a few are common, which makes it hard to train a balanced and accurate model.
+
+
+metrics 
+Micro-F1
+Focus : Global, all predictions
+Bias: Favors frequent labels
+Usage: Overall performance
+
+
+Macro-F1
+Focus : Per label, then averaged
+Bias: Treats all labels equally
+Usage: Balanced performance across all labels, including rare ones
+
+ In MLC with long-tail distribution
+	•	Micro-F1 might look good even if the model is only good at predicting frequent labels.
+	•	Macro-F1 will be low if the model fails on rare labels, highlighting imbalanced performance.
+
+What is being discussed in our analysis: 
+1) the effect of label quantity on the performance of the various methods
+2) the effect of dataset size on the performance of the various methods
+3) the performance of domain-specific vs generic models
+4) the time, cost, and performance trade-offs of different methods
+
+
+
+Especially in real-world legal scenarios, MLC tasks are often challenging due to high label im-
+balance as well as patterns of label co-occurrences: 
+	- Certain legal labels often appear together (e.g., “privacy law” often co-occurs with “data protection”). 
+	This makes the prediction harder because the model has to learn these joint patterns.
+Using a domain-adapted model helps handle the complexity of legal language more accurately.
+
+Multiple methods : 

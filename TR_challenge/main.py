@@ -97,10 +97,9 @@ def main():
         # Analyze postures column
         print(f"\nPostures Analysis:")
         all_postures = []
-        for posture_list in df['postures']:
-            if isinstance(posture_list, list):
-                all_postures.extend(posture_list)
-        
+        num_empty_postures = (df['postures'].apply(lambda x: isinstance(x, list) and len(x) == 0)).sum()
+        print(f"Documents with empty posture lists: {num_empty_postures}")
+                
         posture_counts = Counter(all_postures)
         print(f"Total unique postures: {len(posture_counts)}")
         print("Most common postures:")
@@ -338,6 +337,24 @@ def main():
                         if isinstance(paragraph, str):
                             total_text += len(paragraph)
             total_text_lengths.append(total_text)
+
+        # Create DataFrame with documentId and text length
+    document_lengths_df = pd.DataFrame({
+        'documentId': df['documentId'],
+        'text_length': total_text_lengths
+    })
+
+    # Print summary statistics per documentId
+    print("\n📄 TEXT LENGTH STATISTICS PER DOCUMENT:")
+    print(document_lengths_df.describe())
+
+    # Optional: Save to CSV for further analysis
+    document_lengths_df.to_csv('document_text_lengths.csv', index=False)
+
+    # Example: Show top 10 longest documents
+    longest_docs = document_lengths_df.sort_values(by='text_length', ascending=False).head(10)
+    print("\n🔍 TOP 10 LONGEST DOCUMENTS BY TEXT LENGTH:")
+    print(longest_docs)
 
     # Plot 1: Distribution of document lengths (number of sections)
     plt.subplot(2, 3, 1)
