@@ -1,3 +1,8 @@
-- one table with name of the article + one column for each  json file 
-    - if article name too short: how to make it unique?
-    - 
+- 12-14: LLM 
+- 14-15: ML+ DL
+
+- 15-18: BOOK AI ENGINNER 
+- 18-20: respond to questions 50q
+
+
+
